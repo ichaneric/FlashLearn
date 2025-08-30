@@ -20,9 +20,9 @@ export async function POST(req: NextRequest) {
     const setsDeleted = await prisma.set.deleteMany({});
     console.log(`🗑️ Deleted ${setsDeleted.count} sets`);
 
-    // 4. Clear friend relationships
-    const friendsDeleted = await prisma.friend.deleteMany({});
-    console.log(`🗑️ Deleted ${friendsDeleted.count} friend relationships`);
+    // 4. Clear friend requests
+    const friendRequestsDeleted = await prisma.friendRequest.deleteMany({});
+    console.log(`🗑️ Deleted ${friendRequestsDeleted.count} friend requests`);
 
     // 5. Finally, clear all users
     const usersDeleted = await prisma.user.deleteMany({});
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       await prisma.$executeRaw`ALTER TABLE set AUTO_INCREMENT = 1`;
       await prisma.$executeRaw`ALTER TABLE card AUTO_INCREMENT = 1`;
       await prisma.$executeRaw`ALTER TABLE inbox AUTO_INCREMENT = 1`;
-      await prisma.$executeRaw`ALTER TABLE friend AUTO_INCREMENT = 1`;
+      await prisma.$executeRaw`ALTER TABLE friend_request AUTO_INCREMENT = 1`;
       console.log('🔄 Reset auto-increment counters');
     } catch (error) {
       console.log('⚠️ Could not reset auto-increment counters (this is normal for PostgreSQL)');
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       sets: setsDeleted.count,
       cards: cardsDeleted.count,
       inbox: inboxDeleted.count,
-      friends: friendsDeleted.count
+      friendRequests: friendRequestsDeleted.count
     };
 
     console.log('✅ All user data cleared successfully!');
