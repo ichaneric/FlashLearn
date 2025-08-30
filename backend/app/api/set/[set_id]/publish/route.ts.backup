@@ -1,0 +1,102 @@
+// File: [set_id]/publish/route.ts
+// Description: API endpoint to publish a draft set by changing status from draft to published
+
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../../../prisma/singleton';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Helper function to add CORS headers
+function addCorsHeaders(response: NextResponse) {
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  return response;
+}
+
+// Enhanced token verification
+const verifyToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded;
+  } catch (error) {
+    console.error('[PUBLISH_SET] Token verification failed:', error);
+    return null;
+  }
+};
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS() {
+  const response = new NextResponse(null, { status: 200 });
+  return addCorsHeaders(response);
+}
+
+/**
+ * Publishes a draft set (PUT /api/set/[set_id]/publish)
+ * Changes status from "draft" to "published"
+ */
+export async function PUT(req: NextRequest, { params }: { params: { set_id: string } }) {
+  const { set_id } = params;
+  const token = req.headers.get('authorization')?.split(' ')[1];
+  const decoded = token ? verifyToken(token) : null;
+  
+  if (!decoded) {
+    console.error('[PUT /api/set/[set_id]/publish] Error: Unauthorized');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    console.log('[PUT /api/set/[set_id]/publish] Publishing set:', set_id, 'for user_id:', (decoded as any).user_id);
+
+    // Check if set exists and user owns it
+    const existingSet = await prisma.set.findUnique({
+      where: { set_id },
+      include: { cards: true }
+    });
+
+    if (!existingSet) {
+      return NextResponse.json({ error: 'Set not found' }, { status: 404 });
+    }
+
+    if (existingSet.user_id !== (decoded as any).user_id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    // Only allow publishing draft sets
+    if (existingSet.status === 'published') {
+      return NextResponse.json({ error: 'Set is already published' }, { status: 400 });
+    }
+
+    // Validate that the set has content
+    if (!existingSet.set_name || !existingSet.set_subject) {
+      return NextResponse.json({ error: 'Set must have a title and subject' }, { status: 400 });
+    }
+
+    if (!existingSet.cards || existingSet.cards.length === 0) {
+      return NextResponse.json({ error: 'Set must have at least one card' }, { status: 400 });
+    }
+
+    // Publish the set
+    const publishedSet = await prisma.set.update({
+      where: { set_id },
+      data: { 
+        status: 'published',
+        posted: true // Also set posted to true for backward compatibility
+      },
+      include: { cards: true }
+    });
+
+    console.log('[PUT /api/set/[set_id]/publish] Set published successfully:', set_id);
+    return NextResponse.json({ 
+      message: 'Set published successfully',
+      set: publishedSet
+    });
+
+  } catch (error) {
+    console.error('[PUT /api/set/[set_id]/publish] Error:', error);
+    return NextResponse.json({ error: 'Failed to publish set' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
+}

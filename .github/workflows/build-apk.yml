@@ -1,0 +1,56 @@
+name: Build FlashLearn APK
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'studybuddy/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'studybuddy/**' ]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: studybuddy/package-lock.json
+    
+    - name: Install Dependencies
+      run: |
+        cd studybuddy
+        npm ci
+    
+    - name: Check EAS Configuration
+      run: |
+        cd studybuddy
+        echo "✅ FlashLearn APK build configuration ready!"
+        echo "📱 To build APK, you need to:"
+        echo "1. Get your Expo token from https://expo.dev/accounts/[username]/settings/access-tokens"
+        echo "2. Add it as a GitHub secret named 'EXPO_TOKEN'"
+        echo "3. Push again to trigger the build"
+        echo ""
+        echo "Current EAS configuration:"
+        cat eas.json
+    
+    - name: Install EAS CLI
+      run: npm install -g eas-cli
+    
+    - name: Show Build Instructions
+      run: |
+        echo "🚀 FlashLearn APK Build Setup Complete!"
+        echo ""
+        echo "Next steps:"
+        echo "1. Go to https://expo.dev/accounts/[username]/settings/access-tokens"
+        echo "2. Create a new access token"
+        echo "3. Go to your GitHub repository settings"
+        echo "4. Add the token as a secret named 'EXPO_TOKEN'"
+        echo "5. Push to main branch to build APK"

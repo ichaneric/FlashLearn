@@ -1,0 +1,42 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
+
+const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+const verifyToken = (token: string) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function POST(req: NextRequest) {
+  const token = req.headers.get('authorization')?.split(' ')[1];
+  const decoded = token ? verifyToken(token) : null;
+  if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const { full_name } = await req.json();
+    if (!full_name) {
+      return NextResponse.json({ error: 'Missing full_name' }, { status: 400 });
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        full_name: { contains: full_name, mode: 'insensitive' },
+        user_id: { not: decoded.user_id },
+      },
+      select: { user_id: true, full_name: true, email: true, educational_level: true },
+    });
+
+    return NextResponse.json(users);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to search users' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
+}

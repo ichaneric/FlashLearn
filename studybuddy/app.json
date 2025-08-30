@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "FlashLearn",
+    "slug": "flashlearn-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/flashlearnlogo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/flashlearnlogo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#667eea"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourcompany.flashlearn"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/flashlearnlogo.png",
+        "backgroundColor": "#667eea"
+      },
+      "package": "com.yourcompany.flashlearn",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/images/flashlearnlogo.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-splash-screen",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ]
+    ],
+    "scheme": "flashlearn",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "your-project-id-here"
+      }
+    }
+  }
+}

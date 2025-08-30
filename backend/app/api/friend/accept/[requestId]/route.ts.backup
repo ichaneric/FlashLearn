@@ -1,0 +1,58 @@
+// File: route.ts
+// Description: Handles accepting friend requests by updating the request status.
+
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../../../prisma/singleton';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+/**
+ * Verifies the JWT token and returns the decoded payload
+ * @param {string} token - The JWT token to verify
+ * @returns {object|null} The decoded token payload or null if invalid
+ */
+const verifyToken = (token: string) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function POST(req: NextRequest, { params }: { params: { requestId: string } }) {
+  try {
+    const token = req.headers.get('authorization')?.split(' ')[1];
+    const decoded = token ? verifyToken(token) : null;
+    
+    if (!decoded) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const requestId = params.requestId;
+    
+    // Find the friend request
+    const request = await prisma.friendRequest.findUnique({ 
+      where: { id: requestId } 
+    });
+    
+    if (!request) {
+      return NextResponse.json({ error: 'Friend request not found' }, { status: 404 });
+    }
+    
+    if (request.status !== 'pending') {
+      return NextResponse.json({ error: 'Friend request already handled' }, { status: 400 });
+    }
+
+    // Update request status to accepted
+    await prisma.friendRequest.update({ 
+      where: { id: requestId }, 
+      data: { status: 'accepted' } 
+    });
+
+    return NextResponse.json({ message: 'Friend request accepted successfully' });
+  } catch (error) {
+    console.error('[POST /api/friend/accept] Error:', error);
+    return NextResponse.json({ error: 'Failed to accept friend request' }, { status: 500 });
+  }
+} 

@@ -1,0 +1,77 @@
+// File: route.ts
+// Description: Handles declining or canceling friend requests by updating the request status.
+
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../../../prisma/singleton';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+/**
+ * Verifies the JWT token and returns the decoded payload
+ * @param {string} token - The JWT token to verify
+ * @returns {object|null} The decoded token payload or null if invalid
+ */
+const verifyToken = (token: string) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function DELETE(req: NextRequest, context: { params: { requestId: string } }) {
+  try {
+    const token = req.headers.get('authorization')?.split(' ')[1];
+    const decoded = token ? verifyToken(token) : null;
+    
+    if (!decoded) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const currentUserId = (decoded as any).user_id;
+    let requestId = context.params.requestId;
+    
+    // First try to find the request by ID
+    let request = await prisma.friendRequest.findUnique({ 
+      where: { id: requestId } 
+    });
+    
+    // If not found, try to find by userId (for canceling sent requests)
+    if (!request) {
+      request = await prisma.friendRequest.findFirst({
+        where: {
+          OR: [
+            // Cancel your own sent request
+            { sender_id: currentUserId, receiver_id: requestId, status: 'pending' },
+            // Decline a received request
+            { sender_id: requestId, receiver_id: currentUserId, status: 'pending' },
+          ],
+        },
+      });
+      
+      if (request) {
+        requestId = request.id;
+      }
+    }
+    
+    if (!request) {
+      return NextResponse.json({ error: 'Friend request not found' }, { status: 404 });
+    }
+    
+    if (request.status !== 'pending') {
+      return NextResponse.json({ error: 'Friend request already handled' }, { status: 400 });
+    }
+
+    // Update request status to declined
+    await prisma.friendRequest.update({ 
+      where: { id: requestId }, 
+      data: { status: 'declined' } 
+    });
+
+    return NextResponse.json({ message: 'Friend request declined or canceled successfully' });
+  } catch (error) {
+    console.error('[DELETE /api/friend/decline] Error:', error);
+    return NextResponse.json({ error: 'Failed to decline/cancel friend request' }, { status: 500 });
+  }
+} 

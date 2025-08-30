@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
+
+const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+const verifyToken = (token: string) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function DELETE(req: NextRequest) {
+  const token = req.headers.get('authorization')?.split(' ')[1];
+  const decoded = token ? verifyToken(token) : null;
+  if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const { card_id, set_id } = await req.json();
+    if (!card_id || !set_id) {
+      return NextResponse.json({ error: 'Missing card_id or set_id' }, { status: 400 });
+    }
+
+    const set = await prisma.set.findUnique({ where: { set_id } });
+    if (!set || set.user_id !== decoded.user_id) {
+      return NextResponse.json({ error: 'Set not found or unauthorized' }, { status: 403 });
+    }
+
+    await prisma.card.delete({ where: { card_id } });
+    await prisma.set.update({
+      where: { set_id },
+      data: { number_of_cards: { decrement: 1 } },
+    });
+
+    return NextResponse.json({ message: 'Card deleted' });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Deletion failed' }, { status: 400 });
+  } finally {
+    await prisma.$disconnect();
+  }
+}

@@ -1,0 +1,35 @@
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../../../prisma/singleton';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+const verifyToken = (token: string) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function POST(req: NextRequest, context: { params: { userId: string } }) {
+  const token = req.headers.get('authorization')?.split(' ')[1];
+  const decoded = token ? verifyToken(token) : null;
+  if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const senderId = (decoded as any).user_id;
+    const receiverId = context.params.userId;
+    // Prevent duplicate requests
+    const existing = await prisma.friendRequest.findFirst({
+      where: { sender_id: senderId, receiver_id: receiverId, status: 'pending' },
+    });
+    if (existing) return NextResponse.json({ error: 'Request already sent' }, { status: 400 });
+    await prisma.friendRequest.create({
+      data: { sender_id: senderId, receiver_id: receiverId, status: 'pending' },
+    });
+    return NextResponse.json({ message: 'Friend request sent' });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to send friend request' }, { status: 500 });
+  }
+} 

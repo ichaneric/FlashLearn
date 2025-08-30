@@ -1,0 +1,55 @@
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../prisma/singleton';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+const verifyToken = (token: string) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function GET(req: NextRequest) {
+  const token = req.headers.get('authorization')?.split(' ')[1];
+  const decoded = token ? verifyToken(token) : null;
+  if (!decoded) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const currentUserId = (decoded as any).user_id;
+    // Get all users except the current user
+    const users = await prisma.user.findMany({
+      where: { user_id: { not: currentUserId } },
+      select: {
+        user_id: true,
+        full_name: true,
+        username: true,
+        profile: true,
+        friends: { select: { user_id: true } },
+      },
+    });
+    // Get current user's friends and pending requests
+    const currentUser = await prisma.user.findUnique({
+      where: { user_id: currentUserId },
+      select: { friends: { select: { user_id: true } } },
+    });
+    // For demo, status is 'friend' if in friends, 'none' otherwise
+    const result = users.map(user => {
+      let status = 'none';
+      if (currentUser?.friends.some(f => f.user_id === user.user_id)) status = 'friend';
+      // TODO: Add logic for 'pending' if you have a pending request system
+      return {
+        user_id: user.user_id,
+        full_name: user.full_name,
+        username: user.username,
+        profile_image: user.profile ? `/assets/images/${user.profile}` : '',
+        status,
+      };
+    });
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 });
+  }
+} 

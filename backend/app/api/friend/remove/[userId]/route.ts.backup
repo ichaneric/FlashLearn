@@ -1,0 +1,60 @@
+// File: route.ts
+// Description: Handles removing friends by updating the friend request status to declined.
+
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../../prisma/singleton';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+/**
+ * Verifies the JWT token and returns the decoded payload
+ * @param {string} token - The JWT token to verify
+ * @returns {object|null} The decoded token payload or null if invalid
+ */
+const verifyToken = (token: string) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function DELETE(req: NextRequest, { params }: { params: { userId: string } }) {
+  try {
+    const token = req.headers.get('authorization')?.split(' ')[1];
+    const decoded = token ? verifyToken(token) : null;
+    
+    if (!decoded) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const currentUserId = (decoded as any).user_id;
+    const friendId = params.userId;
+
+    // Find the accepted friend request between these users
+    const friendRequest = await prisma.friendRequest.findFirst({
+      where: {
+        OR: [
+          { sender_id: currentUserId, receiver_id: friendId, status: 'accepted' },
+          { sender_id: friendId, receiver_id: currentUserId, status: 'accepted' }
+        ]
+      }
+    });
+
+    if (!friendRequest) {
+      return NextResponse.json({ error: 'Friend relationship not found' }, { status: 404 });
+    }
+
+    // Update the friend request status to declined (effectively removing the friendship)
+    await prisma.friendRequest.update({
+      where: { id: friendRequest.id },
+      data: { status: 'declined' }
+    });
+
+    return NextResponse.json({ message: 'Friend removed successfully' });
+  } catch (error) {
+    console.error('[DELETE /api/friend/remove] Error:', error);
+    return NextResponse.json({ error: 'Failed to remove friend' }, { status: 500 });
+  }
+} 

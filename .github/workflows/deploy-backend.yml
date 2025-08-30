@@ -1,0 +1,64 @@
+name: Deploy FlashLearn Backend to Vercel
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'backend/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'backend/**' ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install Dependencies
+      run: |
+        cd backend
+        npm ci
+    
+    - name: Run Linting
+      run: |
+        cd backend
+        npm run lint
+    
+    - name: Build Application
+      run: |
+        cd backend
+        npm run build
+    
+    - name: Check Vercel Configuration
+      run: |
+        echo "✅ FlashLearn Backend deployment configuration ready!"
+        echo "🌐 To deploy to Vercel, you need to:"
+        echo "1. Get your Vercel token from https://vercel.com/account/tokens"
+        echo "2. Add it as a GitHub secret named 'VERCEL_TOKEN'"
+        echo "3. Add VERCEL_ORG_ID and VERCEL_PROJECT_ID secrets"
+        echo "4. Push again to trigger the deployment"
+        echo ""
+        echo "Current Vercel configuration:"
+        cat backend/vercel.json
+    
+    - name: Show Deployment Instructions
+      run: |
+        echo "🚀 FlashLearn Backend Deployment Setup Complete!"
+        echo ""
+        echo "Next steps:"
+        echo "1. Go to https://vercel.com/account/tokens"
+        echo "2. Create a new token"
+        echo "3. Go to your GitHub repository settings"
+        echo "4. Add these secrets:"
+        echo "   - VERCEL_TOKEN"
+        echo "   - VERCEL_ORG_ID"
+        echo "   - VERCEL_PROJECT_ID"
+        echo "5. Push to main branch to deploy"

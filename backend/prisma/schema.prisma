@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id         String   @id @default(uuid())
+  username        String   @unique
+  full_name       String
+  isAdmin         Boolean  @default(false)
+  educational_level String   // enum: elementary, junior_highschool, senior_highschool, college
+  email           String   @unique
+  password        String
+  profile         String   // e.g., "1.jpg" to "10.jpg"
+  friends         User[]   @relation("Friends")
+  friendOf        User[]   @relation("Friends")
+  sets            Set[]
+  sent_inbox      Inbox[]  @relation("Sender")
+  received_inbox  Inbox[]  @relation("Receiver")
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+  savedSets       SetSave[] @relation("UserSavedSets")
+}
+
+model FriendRequest {
+  id          String   @id @default(uuid())
+  sender_id   String
+  receiver_id String
+  status      String   // 'pending', 'accepted', 'declined'
+  createdAt   DateTime @default(now())
+
+  sender      User     @relation("SentRequests", fields: [sender_id], references: [user_id])
+  receiver    User     @relation("ReceivedRequests", fields: [receiver_id], references: [user_id])
+}
+
+model Set {
+  set_id          String   @id @default(uuid())
+  user_id         String
+  set_name        String
+  set_subject     String
+  description     String?
+  date_created    DateTime @default(now())
+  number_of_cards Int      @default(0)
+  category        String   // enum: elementary, junior_highschool, senior_highschool, college
+  posted          Boolean  @default(false)
+  status          String   @default("draft") // enum: "draft", "published"
+  user            User     @relation(fields: [user_id], references: [user_id])
+  cards           Card[]
+  inbox           Inbox[]
+  savedBy         SetSave[] @relation("SetSavedBy")
+}
+
+model Card {
+  card_id        String @id @default(uuid())
+  card_question  String
+  card_answer    String
+  set_id         String
+  color          String // enum: yellow, blue, green, pink, white, lightblue, lightgreen, purple, red, brown
+  set            Set    @relation(fields: [set_id], references: [set_id])
+}
+
+model Inbox {
+  inbox_id       String @id @default(uuid())
+  set_id         String
+  sender_id      String
+  receiver_id    String
+  sent_at        DateTime @default(now())
+  set            Set      @relation(fields: [set_id], references: [set_id])
+  sender         User     @relation("Sender", fields: [sender_id], references: [user_id])
+  receiver       User     @relation("Receiver", fields: [receiver_id], references: [user_id])
+}
+
+model SetSave {
+  id          String   @id @default(uuid())
+  user_id     String
+  set_id      String
+  saved_at    DateTime @default(now())
+  
+  user        User     @relation("UserSavedSets", fields: [user_id], references: [user_id])
+  set         Set      @relation("SetSavedBy", fields: [set_id], references: [set_id])
+  
+  @@unique([user_id, set_id])
+}

@@ -1,0 +1,87 @@
+// File: route.ts
+// Description: Handles fetching the current user's friends list.
+
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../../prisma/singleton';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+/**
+ * Verifies the JWT token and returns the decoded payload
+ * @param {string} token - The JWT token to verify
+ * @returns {object|null} The decoded token payload or null if invalid
+ */
+const verifyToken = (token: string) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function GET(req: NextRequest) {
+  try {
+    // Extract and verify token
+    const token = req.headers.get('authorization')?.split(' ')[1];
+    const decoded = token ? verifyToken(token) : null;
+    
+    if (!decoded) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const currentUserId = (decoded as any).user_id;
+
+    // Find all accepted friend relationships for the current user
+    const friends = await prisma.friendRequest.findMany({
+      where: {
+        OR: [
+          { sender_id: currentUserId, status: 'accepted' },
+          { receiver_id: currentUserId, status: 'accepted' }
+        ]
+      },
+      include: {
+        sender: {
+          select: {
+            user_id: true,
+            username: true,
+            full_name: true,
+            profile: true,
+            educational_level: true
+          }
+        },
+        receiver: {
+          select: {
+            user_id: true,
+            username: true,
+            full_name: true,
+            profile: true,
+            educational_level: true
+          }
+        }
+      }
+    });
+
+    // Transform the data to return friend information
+    const friendsList = friends.map(friendship => {
+      // Determine which user is the friend (not the current user)
+      const friend = friendship.sender_id === currentUserId 
+        ? friendship.receiver 
+        : friendship.sender;
+      
+      return {
+        user_id: friend.user_id,
+        username: friend.username,
+        full_name: friend.full_name,
+        profile_image: friend.profile ? `/uploads/${friend.profile}` : '/assets/images/1.jpg',
+        educational_level: friend.educational_level,
+        friendship_id: friendship.id
+      };
+    });
+
+    return NextResponse.json(friendsList);
+  } catch (error) {
+    console.error('[GET /api/user/friends] Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch friends' }, { status: 500 });
+  }
+}

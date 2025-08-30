@@ -1,0 +1,79 @@
+// File: drafts/route.ts
+// Description: API endpoint to fetch all draft sets for the authenticated user
+
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '../../../../prisma/singleton';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Helper function to add CORS headers
+function addCorsHeaders(response: NextResponse) {
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  return response;
+}
+
+// Enhanced token verification
+const verifyToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded;
+  } catch (error) {
+    console.error('[GET_DRAFTS] Token verification failed:', error);
+    return null;
+  }
+};
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS() {
+  const response = new NextResponse(null, { status: 200 });
+  return addCorsHeaders(response);
+}
+
+/**
+ * Fetches all draft sets for the authenticated user (GET /api/set/drafts)
+ */
+export async function GET(req: NextRequest) {
+  const token = req.headers.get('authorization')?.split(' ')[1];
+  const decoded = token ? verifyToken(token) : null;
+  
+  if (!decoded) {
+    console.error('[GET /api/set/drafts] Error: Unauthorized');
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    console.log('[GET /api/set/drafts] Fetching drafts for user_id:', (decoded as any).user_id);
+    
+    const drafts = await prisma.set.findMany({
+      where: { 
+        user_id: (decoded as any).user_id,
+        status: 'draft'
+      },
+      include: {
+        cards: true,
+        user: { 
+          select: { 
+            full_name: true,
+            profile: true,
+            username: true
+          } 
+        },
+      },
+      orderBy: {
+        date_created: 'desc'
+      }
+    });
+
+    console.log('[GET /api/set/drafts] Found', drafts.length, 'drafts');
+    return NextResponse.json(drafts);
+
+  } catch (error) {
+    console.error('[GET /api/set/drafts] Error:', error);
+    return NextResponse.json({ error: 'Failed to fetch drafts' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
+}

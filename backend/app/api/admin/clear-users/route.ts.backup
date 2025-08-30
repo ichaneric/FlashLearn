@@ -1,0 +1,93 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
+
+const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+const verifyToken = (token: string) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+export async function POST(req: NextRequest) {
+  const token = req.headers.get('authorization')?.split(' ')[1];
+  const decoded = token ? verifyToken(token) : null;
+  
+  // Check if user is admin (you can remove this check if you want to allow anyone to clear data)
+  if (!decoded || !decoded.isAdmin) {
+    return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
+  }
+
+  try {
+    console.log('🔄 Starting to clear all user data...');
+
+    // Clear data in the correct order to avoid foreign key constraint issues
+    // 1. Clear inbox messages first (they reference users)
+    const inboxDeleted = await prisma.inbox.deleteMany({});
+    console.log(`🗑️ Deleted ${inboxDeleted.count} inbox messages`);
+
+    // 2. Clear cards (they reference sets)
+    const cardsDeleted = await prisma.card.deleteMany({});
+    console.log(`🗑️ Deleted ${cardsDeleted.count} cards`);
+
+    // 3. Clear sets (they reference users)
+    const setsDeleted = await prisma.set.deleteMany({});
+    console.log(`🗑️ Deleted ${setsDeleted.count} sets`);
+
+    // 4. Clear friend relationships
+    const friendsDeleted = await prisma.friend.deleteMany({});
+    console.log(`🗑️ Deleted ${friendsDeleted.count} friend relationships`);
+
+    // 5. Finally, clear all users
+    const usersDeleted = await prisma.user.deleteMany({});
+    console.log(`🗑️ Deleted ${usersDeleted.count} users`);
+
+    // 6. Reset auto-increment counters (if using MySQL)
+    // Note: This is MySQL-specific. For PostgreSQL, you'd use different commands
+    try {
+      await prisma.$executeRaw`ALTER TABLE user AUTO_INCREMENT = 1`;
+      await prisma.$executeRaw`ALTER TABLE set AUTO_INCREMENT = 1`;
+      await prisma.$executeRaw`ALTER TABLE card AUTO_INCREMENT = 1`;
+      await prisma.$executeRaw`ALTER TABLE inbox AUTO_INCREMENT = 1`;
+      await prisma.$executeRaw`ALTER TABLE friend AUTO_INCREMENT = 1`;
+      console.log('🔄 Reset auto-increment counters');
+    } catch (error) {
+      console.log('⚠️ Could not reset auto-increment counters (this is normal for PostgreSQL)');
+    }
+
+    const totalDeleted = {
+      users: usersDeleted.count,
+      sets: setsDeleted.count,
+      cards: cardsDeleted.count,
+      inbox: inboxDeleted.count,
+      friends: friendsDeleted.count
+    };
+
+    console.log('✅ All user data cleared successfully!');
+    console.log('📊 Summary:', totalDeleted);
+
+    return NextResponse.json({
+      success: true,
+      message: 'All user data cleared successfully',
+      deleted: totalDeleted
+    });
+
+  } catch (error) {
+    console.error('❌ Error clearing user data:', error);
+    return NextResponse.json({ 
+      error: 'Failed to clear user data',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+// Also allow DELETE method for the same functionality
+export async function DELETE(req: NextRequest) {
+  return POST(req);
+} 
