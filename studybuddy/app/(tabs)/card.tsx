@@ -475,7 +475,7 @@ const Card = () => {
       return 'Unknown';
     }
   };
-
+  
   /**
    * Mock proficiency data - currently unused but kept for future features
    * @param {string} setId - The set ID
