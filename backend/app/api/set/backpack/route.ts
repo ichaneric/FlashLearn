@@ -108,8 +108,8 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('[GET set/backpack] Error:', error);
     console.error('[GET set/backpack] Error details:', {
-      message: error.message,
-      stack: error.stack,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
       user_id: decoded?.user_id
     });
     const response = NextResponse.json({ 
