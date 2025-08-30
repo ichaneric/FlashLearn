@@ -105,8 +105,8 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('[POST set/save] Error:', error);
     console.error('[POST set/save] Error details:', {
-      message: error.message,
-      stack: error.stack,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
       set_id: set_id,
       action: action,
       user_id: decoded?.user_id
@@ -188,8 +188,8 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('[GET set/save] Error:', error);
     console.error('[GET set/save] Error details:', {
-      message: error.message,
-      stack: error.stack,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
       set_id: set_id,
       user_id: decoded?.user_id
     });
