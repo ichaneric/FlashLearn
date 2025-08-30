@@ -30,10 +30,12 @@ export async function OPTIONS(req: NextRequest) {
  * @returns {NextResponse} - Response with user's saved sets
  */
 export async function GET(req: NextRequest) {
+  let decoded: any = null;
+  
   try {
     // Extract and verify token using secure utility
     const authHeader = req.headers.get('authorization');
-    const decoded = extractAndVerifyToken(authHeader);
+    decoded = extractAndVerifyToken(authHeader);
     
     if (!decoded) {
       console.error('[GET set/backpack] Error: Unauthorized - Invalid or missing token');
