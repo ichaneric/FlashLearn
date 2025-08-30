@@ -15,10 +15,10 @@ function addCorsHeaders(response: NextResponse) {
 }
 
 // Error logging utility
-function logError(type: string, error: Error, context: any = {}) {
+function logError(type: string, error: unknown, context: any = {}) {
   console.error(`[FLASHCARD_GENERATE] ${type}:`, {
-    error: error.message,
-    stack: error.stack,
+    error: error instanceof Error ? error.message : 'Unknown error',
+    stack: error instanceof Error ? error.stack : 'No stack trace',
     context,
     timestamp: new Date().toISOString(),
   });

@@ -105,34 +105,41 @@ export async function POST(req: NextRequest) {
     }, { status: 201 });
     return addCorsHeaders(response, req.headers.get('origin'));
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     let errorMessage = 'Registration failed';
     let statusCode = 500;
     
     // Handle specific error types
-    if (error?.code === 'P2002') {
-      // Prisma unique constraint error
-      const field = error.meta?.target?.join(', ') || 'field';
-      errorMessage = `User with this ${field} already exists.`;
-      statusCode = 409; // Conflict
-    } else if (error?.code === 'P2025') {
-      // Record not found
-      errorMessage = 'Database record not found';
-      statusCode = 404;
-    } else if (error?.code === 'P2003') {
-      // Foreign key constraint failed
-      errorMessage = 'Invalid reference data';
-      statusCode = 400;
-    } else if (error?.message?.includes('connect')) {
-      // Database connection error
-      errorMessage = 'Database connection failed';
-      statusCode = 503;
-    } else if (error?.message?.includes('formidable')) {
-      // Formidable error
-      errorMessage = 'Invalid form data';
-      statusCode = 400;
-    } else if (error?.message) {
-      errorMessage = error.message;
+    if (error && typeof error === 'object' && 'code' in error) {
+      if (error.code === 'P2002') {
+        // Prisma unique constraint error
+        const meta = (error as any).meta;
+        const field = meta?.target?.join(', ') || 'field';
+        errorMessage = `User with this ${field} already exists.`;
+        statusCode = 409; // Conflict
+      } else if (error.code === 'P2025') {
+        // Record not found
+        errorMessage = 'Database record not found';
+        statusCode = 404;
+      } else if (error.code === 'P2003') {
+        // Foreign key constraint failed
+        errorMessage = 'Invalid reference data';
+        statusCode = 400;
+      }
+    }
+    
+    if (error instanceof Error) {
+      if (error.message?.includes('connect')) {
+        // Database connection error
+        errorMessage = 'Database connection failed';
+        statusCode = 503;
+      } else if (error.message?.includes('formidable')) {
+        // Formidable error
+        errorMessage = 'Invalid form data';
+        statusCode = 400;
+      } else {
+        errorMessage = error.message;
+      }
     }
     
     const response = NextResponse.json({ 

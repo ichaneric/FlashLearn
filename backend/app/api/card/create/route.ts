@@ -90,24 +90,30 @@ export async function POST(req: NextRequest) {
       card 
     });
     return addCorsHeaders(response, req.headers.get('origin'));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[POST /api/card/create] Error:', error);
     
     let errorMessage = 'Card creation failed';
     let statusCode = 500;
     
     // Handle specific error types
-    if (error?.code === 'P2002') {
-      errorMessage = 'Card already exists';
-      statusCode = 409;
-    } else if (error?.code === 'P2003') {
-      errorMessage = 'Invalid set reference';
-      statusCode = 400;
-    } else if (error?.message?.includes('connect')) {
-      errorMessage = 'Database connection failed';
-      statusCode = 503;
-    } else if (error?.message) {
-      errorMessage = error.message;
+    if (error && typeof error === 'object' && 'code' in error) {
+      if (error.code === 'P2002') {
+        errorMessage = 'Card already exists';
+        statusCode = 409;
+      } else if (error.code === 'P2003') {
+        errorMessage = 'Invalid set reference';
+        statusCode = 400;
+      }
+    }
+    
+    if (error instanceof Error) {
+      if (error.message?.includes('connect')) {
+        errorMessage = 'Database connection failed';
+        statusCode = 503;
+      } else {
+        errorMessage = error.message;
+      }
     }
     
     const response = NextResponse.json({ 

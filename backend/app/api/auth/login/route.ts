@@ -88,25 +88,31 @@ export async function POST(req: NextRequest) {
     });
     return addCorsHeaders(response, req.headers.get('origin'));
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     let errorMessage = 'Login failed';
     let statusCode = 500;
     
     // Handle specific error types
-    if (error?.code === 'P2025') {
-      errorMessage = 'User not found';
-      statusCode = 404;
-    } else if (error?.code === 'P2003') {
-      errorMessage = 'Invalid reference data';
-      statusCode = 400;
-    } else if (error?.message?.includes('connect')) {
-      errorMessage = 'Database connection failed';
-      statusCode = 503;
-    } else if (error?.message?.includes('jwt')) {
-      errorMessage = 'Token generation failed';
-      statusCode = 500;
-    } else if (error?.message) {
-      errorMessage = error.message;
+    if (error && typeof error === 'object' && 'code' in error) {
+      if (error.code === 'P2025') {
+        errorMessage = 'User not found';
+        statusCode = 404;
+      } else if (error.code === 'P2003') {
+        errorMessage = 'Invalid reference data';
+        statusCode = 400;
+      }
+    }
+    
+    if (error instanceof Error) {
+      if (error.message?.includes('connect')) {
+        errorMessage = 'Database connection failed';
+        statusCode = 503;
+      } else if (error.message?.includes('jwt')) {
+        errorMessage = 'Token generation failed';
+        statusCode = 500;
+      } else {
+        errorMessage = error.message;
+      }
     }
     
     const response = NextResponse.json({ 

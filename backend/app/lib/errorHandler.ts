@@ -47,8 +47,8 @@ export const createSecureErrorResponse = (
   if (originalError) {
     console.error(`[ERROR ${type}] ${message}:`, {
       requestId,
-      error: originalError.message,
-      stack: originalError.stack,
+      error: originalError instanceof Error ? originalError.message : 'Unknown error',
+      stack: originalError instanceof Error ? originalError.stack : 'No stack trace',
       timestamp: new Date().toISOString(),
     });
   }
@@ -61,7 +61,7 @@ export const createSecureErrorResponse = (
 
   // Only include details in development
   if (!isProduction() && originalError) {
-    response.details = originalError.message;
+    response.details = originalError instanceof Error ? originalError.message : 'Unknown error';
   }
 
   return NextResponse.json(response, { status: statusCode });
@@ -86,7 +86,7 @@ export const handleError = (
     method: request.method,
     userAgent: request.headers.get('user-agent'),
     timestamp: new Date().toISOString(),
-    stack: error.stack,
+    stack: error.stack || 'No stack trace',
   });
 
   // Handle specific error types
