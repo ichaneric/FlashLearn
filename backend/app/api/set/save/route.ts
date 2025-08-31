@@ -30,10 +30,15 @@ export async function OPTIONS(req: NextRequest) {
  * @returns {NextResponse} - Response with success status and learner count
  */
 export async function POST(req: NextRequest) {
+  // Declare variables outside try block for error logging
+  let set_id: string | undefined;
+  let action: string | undefined;
+  let decoded: any;
+
   try {
     // Extract and verify token using secure utility
     const authHeader = req.headers.get('authorization');
-    const decoded = extractAndVerifyToken(authHeader);
+    decoded = extractAndVerifyToken(authHeader);
     
     if (!decoded) {
       console.error('[POST set/save] Error: Unauthorized - Invalid or missing token');
@@ -41,7 +46,9 @@ export async function POST(req: NextRequest) {
       return addCorsHeaders(response, req.headers.get('origin'));
     }
 
-    const { set_id, action } = await req.json();
+    const requestData = await req.json();
+    set_id = requestData.set_id;
+    action = requestData.action;
     
     if (!set_id || !action || !['save', 'unsave'].includes(action)) {
       const response = NextResponse.json({ error: 'Missing set_id or invalid action' }, { status: 400 });
@@ -124,10 +131,14 @@ export async function POST(req: NextRequest) {
  * @returns {NextResponse} - Response with learner count and save status
  */
 export async function GET(req: NextRequest) {
+  // Declare variables outside try block for error logging
+  let set_id: string | undefined;
+  let decoded: any;
+
   try {
     // Extract and verify token using secure utility
     const authHeader = req.headers.get('authorization');
-    const decoded = extractAndVerifyToken(authHeader);
+    decoded = extractAndVerifyToken(authHeader);
     
     if (!decoded) {
       console.error('[GET set/save] Error: Unauthorized - Invalid or missing token');
@@ -136,7 +147,7 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const set_id = searchParams.get('set_id');
+    set_id = searchParams.get('set_id') || undefined;
 
     if (!set_id) {
       const response = NextResponse.json({ error: 'Missing set_id parameter' }, { status: 400 });
