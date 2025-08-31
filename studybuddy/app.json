@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FlashLearn",
-    "slug": "flashlearn-app",
+    "slug": "flashlearn",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/flashlearnlogo.png",
@@ -52,7 +52,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "your-project-id-here"
+        "projectId": "fbe1e646-e8b5-48ad-9629-96f5c19039f5"
       }
     }
   }
