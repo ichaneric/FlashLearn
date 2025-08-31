@@ -5,7 +5,6 @@ import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, StatusBar, 
 import React, { useState } from 'react';
 import axios from 'axios';
 import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
 import { createApiUrl, API_ENDPOINTS, getApiConfig } from '../../config/api';
 import { handleTextInputChange } from '../../utils/emojiPrevention';
@@ -73,52 +72,36 @@ const Login = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#6d28d9" />
       
-      {/* Enhanced Purple Gradient Background */}
-      <LinearGradient
-        colors={['#6d28d9', '#7c3aed', '#8b5cf6', '#a855f7']}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+      {/* Background Image */}
+      <Image
+        source={require('../../assets/images/auth_background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
       />
-      
-      {/* Enhanced Floating Elements */}
-      <View style={styles.backgroundElements}>
-        <View style={styles.floatingCard1} />
-        <View style={styles.floatingCard2} />
-        <View style={styles.floatingCircle1} />
-        <View style={styles.floatingCircle2} />
-        <View style={styles.floatingDot1} />
-        <View style={styles.floatingDot2} />
-      </View>
       
       <KeyboardAvoidingView 
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Enhanced Login Card */}
+          {/* Login Card */}
           <View style={styles.loginCard}>
-            {/* Enhanced Header */}
+            {/* Header */}
             <View style={styles.header}>
               <View style={styles.logoContainer}>
-                <LinearGradient
-                  colors={['#f8fafc', '#e2e8f0']}
-                  style={styles.logoGradient}
-                >
-                  <Image
-                    source={require('../../assets/images/flashlearnlogo.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                  />
-                </LinearGradient>
+                <Image
+                  source={require('../../assets/images/flashlearnlogo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
               </View>
               <Text style={styles.appName}>Welcome Back</Text>
               <Text style={styles.subtitle}>Sign in to continue your learning journey</Text>
             </View>
 
-            {/* Enhanced Login Form */}
+            {/* Login Form */}
             <View style={styles.formContainer}>
-              {/* Enhanced Email Input */}
+              {/* Email Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Email Address</Text>
                 <View style={styles.inputContainer}>
@@ -146,7 +129,7 @@ const Login = () => {
                 </View>
               </View>
 
-              {/* Enhanced Password Input */}
+              {/* Password Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Password</Text>
                 <View style={styles.inputContainer}>
@@ -184,26 +167,19 @@ const Login = () => {
                 </View>
               </View>
 
-              {/* Enhanced Login Button */}
+              {/* Login Button */}
               <TouchableOpacity 
                 style={styles.loginButton}
                 onPress={handleLogin}
                 disabled={loading}
                 activeOpacity={0.8}
               >
-                <LinearGradient
-                  colors={['#6d28d9', '#7c3aed']}
-                  style={styles.loginButtonGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={styles.loginButtonText}>
-                    {loading ? 'Signing In...' : 'Sign In'}
-                  </Text>
-                </LinearGradient>
+                <Text style={styles.loginButtonText}>
+                  {loading ? 'Signing In...' : 'Sign In'}
+                </Text>
               </TouchableOpacity>
 
-              {/* Enhanced Signup Link */}
+              {/* Signup Link */}
               <View style={styles.signupContainer}>
                 <Text style={styles.signupText}>Don&apos;t have an account? </Text>
                 <TouchableOpacity onPress={() => router.push('/auth/signup')}>
@@ -225,85 +201,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#6d28d9',
   },
-  gradient: {
+  backgroundImage: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
-  backgroundElements: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
-  floatingCard1: {
-    position: 'absolute',
-    width: 120,
-    height: 160,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: 20,
-    top: '8%',
-    right: -20,
-    transform: [{ rotate: '15deg' }],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  floatingCard2: {
-    position: 'absolute',
-    width: 90,
-    height: 120,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 16,
-    bottom: '18%',
-    left: -15,
-    transform: [{ rotate: '-12deg' }],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  floatingCircle1: {
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 30,
-    top: '35%',
-    right: '10%',
-  },
-  floatingCircle2: {
-    position: 'absolute',
-    width: 40,
-    height: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 20,
-    bottom: '30%',
-    right: '20%',
-  },
-  floatingDot1: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 4,
-    top: '25%',
-    left: '15%',
-  },
-  floatingDot2: {
-    position: 'absolute',
-    width: 6,
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 3,
-    top: '60%',
-    left: '10%',
+    width: '100%',
+    height: '100%',
   },
   keyboardView: {
     flex: 1,
@@ -332,20 +233,16 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 72,
     height: 72,
+    backgroundColor: '#f3f4f6',
     borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
     elevation: 12,
-  },
-  logoGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   logo: {
     width: 44,
@@ -421,19 +318,17 @@ const styles = StyleSheet.create({
     tintColor: '#6b7280',
   },
   loginButton: {
+    backgroundColor: '#6d28d9',
     borderRadius: 16,
-    overflow: 'hidden',
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 28,
     shadowColor: '#6d28d9',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 10,
-  },
-  loginButtonGradient: {
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   loginButtonText: {
     color: '#ffffff',

@@ -2,8 +2,7 @@
 // Description: Loading component for when the app is bundling
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, Animated, StyleSheet, Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, Animated, StyleSheet, Dimensions, Image } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -67,11 +66,11 @@ const BundlingLoader: React.FC<BundlingLoaderProps> = ({
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#667eea', '#764ba2', '#f093fb']}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+      {/* Background Image */}
+      <Image
+        source={require('../assets/images/landing_background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
       />
       
       {/* Animated Logo */}
@@ -188,12 +187,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#667eea',
   },
-  gradient: {
+  backgroundImage: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+    width: '100%',
+    height: '100%',
   },
   logoContainer: {
     width: 140,

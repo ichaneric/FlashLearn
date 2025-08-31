@@ -5,7 +5,6 @@ import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, StatusBar, 
 import React, { useState } from 'react';
 import axios from 'axios';
 import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../contexts/AuthContext';
 import { createApiUrl, API_ENDPOINTS, getApiConfig, getFormDataConfig } from '../../config/api';
@@ -241,24 +240,12 @@ const Signup = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#6d28d9" />
       
-      {/* Enhanced Purple Gradient Background */}
-      <LinearGradient
-        colors={['#6d28d9', '#7c3aed', '#8b5cf6', '#a855f7']}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+      {/* Background Image */}
+      <Image
+        source={require('../../assets/images/auth_background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
       />
-      
-      {/* Enhanced Floating Elements */}
-      <View style={styles.backgroundElements}>
-        <View style={styles.floatingCard1} />
-        <View style={styles.floatingCard2} />
-        <View style={styles.floatingCard3} />
-        <View style={styles.floatingCircle1} />
-        <View style={styles.floatingCircle2} />
-        <View style={styles.floatingDot1} />
-        <View style={styles.floatingDot2} />
-      </View>
       
       <KeyboardAvoidingView 
         style={styles.keyboardView}
@@ -270,31 +257,26 @@ const Signup = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Enhanced Signup Card */}
+          {/* Signup Card */}
           <View style={styles.signupCard}>
-            {/* Enhanced Header */}
+            {/* Header */}
             <View style={styles.header}>
               <View style={styles.logoContainer}>
-                <LinearGradient
-                  colors={['#f8fafc', '#e2e8f0']}
-                  style={styles.logoGradient}
-                >
-                  <Image
-                    source={require('../../assets/images/flashlearnlogo.png')}
-                    style={styles.logo}
-                    resizeMode="contain"
-                  />
-                </LinearGradient>
+                <Image
+                  source={require('../../assets/images/flashlearnlogo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
               </View>
               <Text style={styles.appName}>Create Account</Text>
               <Text style={styles.subtitle}>Join FlashLearn today and start your learning journey</Text>
             </View>
 
-            {/* Enhanced Profile Selection Section */}
+            {/* Profile Selection Section */}
             <View style={styles.profileSection}>
               <Text style={styles.sectionTitle}>Choose Your Profile Picture</Text>
               
-              {/* Enhanced Current Selection Display */}
+              {/* Current Selection Display */}
               <View style={styles.currentSelectionContainer}>
                 <View style={styles.currentSelectionImage}>
                   {customImage ? (
@@ -316,23 +298,16 @@ const Signup = () => {
                 </Text>
               </View>
 
-              {/* Enhanced Custom Image Button */}
+              {/* Custom Image Button */}
               <TouchableOpacity 
                 style={styles.customImageButton}
                 onPress={pickImage}
                 activeOpacity={0.8}
               >
-                <LinearGradient
-                  colors={['#10b981', '#059669']}
-                  style={styles.customImageButtonGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={styles.customImageButtonText}>📷 Use Your Own Photo</Text>
-                </LinearGradient>
+                <Text style={styles.customImageButtonText}>📷 Use Your Own Photo</Text>
               </TouchableOpacity>
 
-              {/* Enhanced Avatar Selection */}
+              {/* Avatar Selection */}
               <Text style={styles.avatarSectionTitle}>Or Choose from Avatars</Text>
               <ScrollView 
                 horizontal 
@@ -363,9 +338,9 @@ const Signup = () => {
               </ScrollView>
             </View>
 
-            {/* Enhanced Signup Form */}
+            {/* Signup Form */}
             <View style={styles.formContainer}>
-              {/* Enhanced Full Name Input */}
+              {/* Full Name Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Full Name</Text>
                 <View style={styles.inputContainer}>
@@ -392,7 +367,7 @@ const Signup = () => {
                 </View>
               </View>
 
-              {/* Enhanced Username Input */}
+              {/* Username Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Username</Text>
                 <View style={styles.inputContainer}>
@@ -419,7 +394,7 @@ const Signup = () => {
                 </View>
               </View>
 
-              {/* Enhanced Email Input */}
+              {/* Email Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Email Address</Text>
                 <View style={styles.inputContainer}>
@@ -447,7 +422,7 @@ const Signup = () => {
                 </View>
               </View>
 
-              {/* Enhanced Educational Level Input */}
+              {/* Educational Level Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Educational Level</Text>
                 <View style={styles.inputContainer}>
@@ -486,7 +461,7 @@ const Signup = () => {
                 </View>
               </View>
 
-              {/* Enhanced Password Input */}
+              {/* Password Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Password</Text>
                 <View style={styles.inputContainer}>
@@ -524,7 +499,7 @@ const Signup = () => {
                 </View>
               </View>
 
-              {/* Enhanced Confirm Password Input */}
+              {/* Confirm Password Input */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Confirm Password</Text>
                 <View style={styles.inputContainer}>
@@ -562,26 +537,19 @@ const Signup = () => {
                 </View>
               </View>
 
-              {/* Enhanced Signup Button */}
+              {/* Signup Button */}
               <TouchableOpacity 
                 style={styles.signupButton}
                 onPress={handleSignup}
                 disabled={loading}
                 activeOpacity={0.8}
               >
-                <LinearGradient
-                  colors={['#6d28d9', '#7c3aed']}
-                  style={styles.signupButtonGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={styles.signupButtonText}>
-                    {loading ? 'Creating Account...' : 'Create Account'}
-                  </Text>
-                </LinearGradient>
+                <Text style={styles.signupButtonText}>
+                  {loading ? 'Creating Account...' : 'Create Account'}
+                </Text>
               </TouchableOpacity>
 
-              {/* Enhanced Login Link */}
+              {/* Login Link */}
               <View style={styles.loginContainer}>
                 <Text style={styles.loginText}>Already have an account? </Text>
                 <TouchableOpacity onPress={() => router.push('/auth/login')}>
@@ -604,89 +572,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#6d28d9',
   },
-  gradient: {
+  backgroundImage: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
-  backgroundElements: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
-  floatingCard1: {
-    position: 'absolute',
-    width: 90,
-    height: 120,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 14,
-    top: '8%',
-    right: -10,
-    transform: [{ rotate: '10deg' }],
-  },
-  floatingCard2: {
-    position: 'absolute',
-    width: 70,
-    height: 95,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    borderRadius: 12,
-    bottom: '12%',
-    left: -8,
-    transform: [{ rotate: '-12deg' }],
-  },
-  floatingCard3: {
-    position: 'absolute',
-    width: 60,
-    height: 80,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 10,
-    top: '30%',
-    left: '85%',
-    transform: [{ rotate: '15deg' }],
-  },
-  floatingCircle1: {
-    position: 'absolute',
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    top: '20%',
-    left: '10%',
-    transform: [{ rotate: '45deg' }],
-  },
-  floatingCircle2: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    bottom: '30%',
-    right: '20%',
-    transform: [{ rotate: '-30deg' }],
-  },
-  floatingDot1: {
-    position: 'absolute',
-    width: 15,
-    height: 15,
-    borderRadius: 7.5,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    top: '50%',
-    left: '40%',
-    transform: [{ rotate: '45deg' }],
-  },
-  floatingDot2: {
-    position: 'absolute',
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    bottom: '60%',
-    right: '50%',
-    transform: [{ rotate: '15deg' }],
+    width: '100%',
+    height: '100%',
   },
   keyboardView: {
     flex: 1,
@@ -714,18 +603,11 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: 56,
     height: 56,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f3f4f6',
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-  },
-  logoGradient: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   logo: {
     width: 32,
@@ -785,19 +667,17 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   customImageButton: {
+    backgroundColor: '#10b981',
     borderRadius: 12,
-    overflow: 'hidden',
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 24,
     shadowColor: '#10b981',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-  },
-  customImageButtonGradient: {
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   customImageButtonText: {
     color: '#ffffff',
@@ -923,11 +803,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 6,
-  },
-  signupButtonGradient: {
-    paddingVertical: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   signupButtonText: {
     color: '#ffffff',
