@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
+    zIndex: -1, // Ensure elements are behind content
   },
   floatingCard1: {
     position: 'absolute',
@@ -353,14 +354,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  backgroundElements: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    zIndex: -1, // Ensure elements are behind content
   },
   floatingCircle1: {
     position: 'absolute',
