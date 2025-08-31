@@ -8,21 +8,12 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Configure server external packages
-  serverExternalPackages: ['@prisma/client'],
   // Configure image domains if needed
   images: {
     domains: ['localhost', 'vercel.app'],
   },
-  // Serve static files from public/uploads directory
-  async rewrites() {
-    return [
-      {
-        source: '/uploads/:path*',
-        destination: '/uploads/:path*',
-      },
-    ];
-  },
+  // Configure server external packages
+  serverExternalPackages: ['@prisma/client'],
 };
 
 module.exports = nextConfig;
