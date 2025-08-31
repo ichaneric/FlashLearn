@@ -1,0 +1,41 @@
+warning: in the working copy of 'studybuddy/app.json', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/studybuddy/app.json b/studybuddy/app.json[m
+[1mindex 23a941b..c0993f0 100644[m
+[1m--- a/studybuddy/app.json[m
+[1m+++ b/studybuddy/app.json[m
+[36m@@ -4,12 +4,12 @@[m
+     "slug": "flashlearn",[m
+     "version": "1.0.0",[m
+     "orientation": "portrait",[m
+[31m-    "icon": "./assets/images/icon.png",[m
+[32m+[m[32m    "icon": "./assets/images/flashlearnlogo.png",[m
+     "userInterfaceStyle": "light",[m
+     "splash": {[m
+[31m-      "image": "./assets/images/splash-icon.png",[m
+[32m+[m[32m      "image": "./assets/images/flashlearnlogo.png",[m
+       "resizeMode": "contain",[m
+[31m-      "backgroundColor": "#667eea"[m
+[32m+[m[32m      "backgroundColor": "#3D14C4"[m
+     },[m
+     "assetBundlePatterns": [[m
+       "**/*"[m
+[36m@@ -20,8 +20,8 @@[m
+     },[m
+     "android": {[m
+       "adaptiveIcon": {[m
+[31m-        "foregroundImage": "./assets/images/icon.png",[m
+[31m-        "backgroundColor": "#667eea"[m
+[32m+[m[32m        "foregroundImage": "./assets/images/flashlearnlogo.png",[m
+[32m+[m[32m        "backgroundColor": "#3D14C4"[m
+       },[m
+       "package": "com.flashlearn.app",[m
+       "permissions": [[m
+[36m@@ -33,7 +33,7 @@[m
+       "versionCode": 1[m
+     },[m
+     "web": {[m
+[31m-      "favicon": "./assets/images/icon.png",[m
+[32m+[m[32m      "favicon": "./assets/images/flashlearnlogo.png",[m
+       "bundler": "metro"[m
+     },[m
+     "plugins": [[m

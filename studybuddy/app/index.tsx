@@ -37,7 +37,7 @@ export default function Index() {
   console.log('[Index] Showing landing page - isAuthenticated:', isAuthenticated);
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#6d28d9" />
+      <StatusBar barStyle="light-content" backgroundColor="#3D14C4" />
       
       {/* Background Image */}
       <Image
@@ -48,22 +48,21 @@ export default function Index() {
       
       {/* Content */}
       <View style={styles.content}>
-        {/* Header Section */}
-        <View style={styles.header}>
-          {/* Main Card Container */}
-          <View style={styles.mainCard}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('../assets/images/flashlearnlogo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={styles.appName}>FlashLearn</Text>
-            <Text style={styles.tagline}>Smart flashcards for better learning</Text>
-          </View>
+        {/* Logo */}
+        <View style={styles.logoContainer}>
+            <Image
+              source={require('../assets/images/flashlearnlogo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
         </View>
-
+        
+        {/* Title */}
+        <Text style={styles.appName}>Flash Learn</Text>
+        
+        {/* Subtitle */}
+        <Text style={styles.tagline}>Smart flashcards for better learning</Text>
+        
         {/* Action Buttons */}
         <View style={styles.actionContainer}>
           <TouchableOpacity 
@@ -90,7 +89,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#6d28d9',
+    backgroundColor: '#3D14C4',
   },
   backgroundImage: {
     position: 'absolute',
@@ -105,89 +104,77 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 80,
   },
-  header: {
-    alignItems: 'center',
-    width: '100%',
-    flex: 1,
-    justifyContent: 'center',
+  logoContainer: {
+    marginBottom: 40,
   },
-  mainCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    padding: 32,
+  logoCircle: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 16,
-    width: '100%',
-    maxWidth: 350,
-  },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   logo: {
-    width: 50,
-    height: 50,
+    width: 180,
+    height: 180,
   },
   appName: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#1f2937',
-    marginBottom: 8,
-    letterSpacing: -0.5,
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 12,
     textAlign: 'center',
   },
   tagline: {
     fontSize: 18,
-    color: '#374151',
+    color: '#ffffff',
     textAlign: 'center',
-    lineHeight: 24,
-    maxWidth: 280,
-    fontWeight: '500',
+    marginBottom: 60,
+    fontWeight: '400',
   },
   actionContainer: {
     width: '100%',
     gap: 16,
-    maxWidth: 350,
+    maxWidth: 300,
   },
   primaryButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-    height: 60,
+    shadowRadius: 4,
+    elevation: 4,
   },
   primaryButtonText: {
-    color: '#6d28d9',
+    color: '#3D14C4',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   secondaryButton: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
   },
   secondaryButtonText: {
-    color: '#ffffff',
-    fontSize: 17,
+    color: '#3D14C4',
+    fontSize: 18,
     fontWeight: '600',
   },
 });

@@ -85,22 +85,26 @@ const BundlingLoader: React.FC<BundlingLoaderProps> = ({
           },
         ]}
       >
-        <Animated.Image
-          source={require('../assets/images/flashlearnlogo.png')}
+        <Animated.View
           style={[
-            styles.logo,
+            styles.logoCircle,
             {
               transform: [{ rotate: spin }],
             },
           ]}
-          resizeMode="contain"
-        />
+        >
+          <Image
+            source={require('../assets/images/flashlearnlogo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </Animated.View>
       </Animated.View>
 
-      {/* Loading Text */}
+      {/* App Name */}
       <Animated.Text
         style={[
-          styles.loadingText,
+          styles.appName,
           {
             opacity: fadeAnim,
             transform: [{ 
@@ -112,32 +116,8 @@ const BundlingLoader: React.FC<BundlingLoaderProps> = ({
           },
         ]}
       >
-        {message}
+        Flash Learn
       </Animated.Text>
-
-      {/* Progress Bar */}
-      <Animated.View
-        style={[
-          styles.progressContainer,
-          {
-            opacity: fadeAnim,
-          },
-        ]}
-      >
-        <View style={styles.progressBar}>
-          <Animated.View
-            style={[
-              styles.progressFill,
-              {
-                width: pulseAnim.interpolate({
-                  inputRange: [1, 1.1],
-                  outputRange: ['60%', '80%'],
-                }),
-              },
-            ]}
-          />
-        </View>
-      </Animated.View>
 
       {/* Loading Dots */}
       <Animated.View
@@ -175,6 +155,87 @@ const BundlingLoader: React.FC<BundlingLoaderProps> = ({
             }
           ]} 
         />
+        <Animated.View 
+          style={[
+            styles.dot, 
+            { 
+              backgroundColor: '#ffffff',
+              transform: [{ scale: pulseAnim }],
+            }
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.dot, 
+            { 
+              backgroundColor: '#ffffff',
+              transform: [{ scale: pulseAnim }],
+            }
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.dot, 
+            { 
+              backgroundColor: '#ffffff',
+              transform: [{ scale: pulseAnim }],
+            }
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.dot, 
+            { 
+              backgroundColor: '#ffffff',
+              transform: [{ scale: pulseAnim }],
+            }
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.dot, 
+            { 
+              backgroundColor: '#ffffff',
+              transform: [{ scale: pulseAnim }],
+            }
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.dot, 
+            { 
+              backgroundColor: '#ffffff',
+              transform: [{ scale: pulseAnim }],
+            }
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.dot, 
+            { 
+              backgroundColor: '#ffffff',
+              transform: [{ scale: pulseAnim }],
+            }
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.dot, 
+            { 
+              backgroundColor: '#ffffff',
+              transform: [{ scale: pulseAnim }],
+            }
+          ]} 
+        />
+        <Animated.View 
+          style={[
+            styles.dot, 
+            { 
+              backgroundColor: '#ffffff',
+              transform: [{ scale: pulseAnim }],
+            }
+          ]} 
+        />
       </Animated.View>
     </View>
   );
@@ -185,7 +246,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#667eea',
+    backgroundColor: '#3D14C4',
   },
   backgroundImage: {
     position: 'absolute',
@@ -193,51 +254,45 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   logoContainer: {
-    width: 140,
-    height: 140,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginBottom: 40,
   },
+  logoCircle: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+  },
   logo: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
   },
-  loadingText: {
-    fontSize: 22,
-    color: '#FFFFFF',
-    fontWeight: '600',
-    marginBottom: 30,
+  appName: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 40,
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-  progressContainer: {
-    width: width * 0.7,
-    marginBottom: 30,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 3,
   },
   loadingDots: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    width: 200,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+    marginVertical: 2,
     opacity: 0.8,
   },
 });

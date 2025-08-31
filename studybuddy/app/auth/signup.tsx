@@ -1,7 +1,7 @@
 // File: signup.tsx
 // Description: Handles user registration with profile image upload and avatar selection functionality.
 
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, StatusBar, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, StatusBar, ScrollView, Image, Modal } from 'react-native';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { router } from 'expo-router';
@@ -22,6 +22,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showEducationalDropdown, setShowEducationalDropdown] = useState(false);
   const { login } = useAuth();
 
   const avatars = [
@@ -62,6 +63,15 @@ const Signup = () => {
       'avatar_15.jpg': require('../../assets/avatars/avatar_15.jpg'),
     };
     return avatarMap[avatarName] || avatarMap['avatar_1.jpg'];
+  };
+
+  /**
+   * Gets the display label for the selected educational level
+   * @returns {string} The display label or placeholder text
+   */
+  const getEducationalLevelLabel = () => {
+    const selected = educationalLevels.find(level => level.value === educationalLevel);
+    return selected ? selected.label : 'Choose Educational Level';
   };
 
   /**
@@ -238,328 +248,331 @@ const Signup = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#6d28d9" />
+      <StatusBar barStyle="dark-content" backgroundColor="#f9f9f9" />
       
-      {/* Background Image */}
-      <Image
-        source={require('../../assets/images/auth_background.png')}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      />
-      
-      <KeyboardAvoidingView 
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent} 
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Signup Card */}
-          <View style={styles.signupCard}>
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require('../../assets/images/flashlearnlogo.png')}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </View>
-              <Text style={styles.appName}>Create Account</Text>
-              <Text style={styles.subtitle}>Join FlashLearn today and start your learning journey</Text>
-            </View>
+        
+          <Text style={styles.formTitle}>Create Account</Text>
 
-            {/* Profile Selection Section */}
-            <View style={styles.profileSection}>
-              <Text style={styles.sectionTitle}>Choose Your Profile Picture</Text>
-              
-              {/* Current Selection Display */}
-              <View style={styles.currentSelectionContainer}>
-                <View style={styles.currentSelectionImage}>
-                  {customImage ? (
-                    <Image
-                      source={{ uri: customImage }}
-                      style={styles.currentImage}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <Image
-                      source={getAvatarSource(selectedAvatar)}
-                      style={styles.currentImage}
-                      resizeMode="cover"
-                    />
-                  )}
-                </View>
-                <Text style={styles.currentSelectionText}>
-                  {customImage ? 'Custom Image' : 'Selected Avatar'}
-                </Text>
-              </View>
-
-              {/* Custom Image Button */}
-              <TouchableOpacity 
-                style={styles.customImageButton}
-                onPress={pickImage}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.customImageButtonText}>📷 Use Your Own Photo</Text>
-              </TouchableOpacity>
-
-              {/* Avatar Selection */}
-              <Text style={styles.avatarSectionTitle}>Or Choose from Avatars</Text>
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false} 
-                style={styles.avatarChoicesScroll} 
-                contentContainerStyle={styles.avatarChoicesRow}
-              >
-                {avatars.map((avatar) => (
-                  <TouchableOpacity
-                    key={avatar}
-                    style={[
-                      styles.avatarChoice, 
-                      selectedAvatar === avatar && !customImage && styles.avatarChoiceSelected
-                    ]}
-                    onPress={() => {
-                      setSelectedAvatar(avatar);
-                      setCustomImage(null);
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <Image
-                      source={getAvatarSource(avatar)}
-                      style={styles.avatarImage}
-                      resizeMode="cover"
-                    />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-
-            {/* Signup Form */}
-            <View style={styles.formContainer}>
-              {/* Full Name Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Full Name</Text>
-                <View style={styles.inputContainer}>
-                  <View style={styles.iconContainer}>
-                    <Image 
-                      source={require('../../assets/icons/name.png')} 
-                      style={styles.inputIcon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter your full name"
-                    placeholderTextColor="#9ca3af"
-                    value={fullName}
-                    onChangeText={(text) => handleTextInputChange(
-                      text, 
-                      setFullName,
-                      () => Alert.alert('Invalid Input', 'Emojis are not allowed in names.')
-                    )}
-                    autoCapitalize="words"
-                    autoCorrect={false}
+          {/* Profile Selection Section */}
+          <View style={styles.profileSection}>
+            <Text style={styles.sectionTitle}>Profile</Text>
+            
+            {/* Current Selection Display */}
+            <View style={styles.currentSelectionContainer}>
+              <View style={styles.currentSelectionImage}>
+                {customImage ? (
+                  <Image
+                    source={{ uri: customImage }}
+                    style={styles.currentImage}
+                    resizeMode="cover"
                   />
-                </View>
-              </View>
-
-              {/* Username Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Username</Text>
-                <View style={styles.inputContainer}>
-                  <View style={styles.iconContainer}>
-                    <Image 
-                      source={require('../../assets/icons/username.png')} 
-                      style={styles.inputIcon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Choose a username"
-                    placeholderTextColor="#9ca3af"
-                    value={username}
-                    onChangeText={(text) => handleTextInputChange(
-                      text, 
-                      setUsername,
-                      () => Alert.alert('Invalid Input', 'Emojis are not allowed in usernames.')
-                    )}
-                    autoCapitalize="none"
-                    autoCorrect={false}
+                ) : (
+                  <Image
+                    source={getAvatarSource(selectedAvatar)}
+                    style={styles.currentImage}
+                    resizeMode="cover"
                   />
-                </View>
-              </View>
-
-              {/* Email Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Email Address</Text>
-                <View style={styles.inputContainer}>
-                  <View style={styles.iconContainer}>
-                    <Image 
-                      source={require('../../assets/icons/email.png')} 
-                      style={styles.inputIcon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <TextInput
-                    style={styles.input}
-                    keyboardType="email-address"
-                    placeholder="Enter your email"
-                    placeholderTextColor="#9ca3af"
-                    value={email}
-                    onChangeText={(text) => handleTextInputChange(
-                      text, 
-                      setEmail,
-                      () => Alert.alert('Invalid Input', 'Emojis are not allowed in email addresses.')
-                    )}
-                    autoCapitalize="none"
-                    autoCorrect={false}
+                )}
+                <TouchableOpacity style={styles.photosIcon} onPress={pickImage}>
+                  <Image 
+                    source={require('../../assets/icons/photos.png')} 
+                    style={styles.photosIconImage}
+                    resizeMode="contain"
                   />
-                </View>
-              </View>
-
-              {/* Educational Level Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Educational Level</Text>
-                <View style={styles.inputContainer}>
-                  <View style={styles.iconContainer}>
-                    <Image 
-                      source={require('../../assets/icons/education.png')} 
-                      style={styles.inputIcon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.levelScroll}
-                    contentContainerStyle={styles.levelContainer}
-                  >
-                    {educationalLevels.map((level) => (
-                      <TouchableOpacity
-                        key={level.value}
-                        style={[
-                          styles.levelOption,
-                          educationalLevel === level.value && styles.levelOptionSelected
-                        ]}
-                        onPress={() => setEducationalLevel(level.value)}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={[
-                          styles.levelOptionText,
-                          educationalLevel === level.value && styles.levelOptionTextSelected
-                        ]}>
-                          {level.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              </View>
-
-              {/* Password Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Password</Text>
-                <View style={styles.inputContainer}>
-                  <View style={styles.iconContainer}>
-                    <Image 
-                      source={require('../../assets/icons/password.png')} 
-                      style={styles.inputIcon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <TextInput
-                    style={styles.input}
-                    secureTextEntry={!showPassword}
-                    placeholder="Create a password"
-                    placeholderTextColor="#9ca3af"
-                    value={password}
-                    onChangeText={(text) => handleTextInputChange(
-                      text, 
-                      setPassword,
-                      () => Alert.alert('Invalid Input', 'Emojis are not allowed in passwords.')
-                    )}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                  <TouchableOpacity 
-                    style={styles.passwordToggle}
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    <Image 
-                      source={showPassword ? require('../../assets/icons/hide.png') : require('../../assets/icons/show.png')} 
-                      style={styles.passwordToggleIcon}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Confirm Password Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Confirm Password</Text>
-                <View style={styles.inputContainer}>
-                  <View style={styles.iconContainer}>
-                    <Image 
-                      source={require('../../assets/icons/password.png')} 
-                      style={styles.inputIcon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <TextInput
-                    style={styles.input}
-                    secureTextEntry={!showConfirmPassword}
-                    placeholder="Confirm your password"
-                    placeholderTextColor="#9ca3af"
-                    value={confirmPassword}
-                    onChangeText={(text) => handleTextInputChange(
-                      text, 
-                      setConfirmPassword,
-                      () => Alert.alert('Invalid Input', 'Emojis are not allowed in passwords.')
-                    )}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                  <TouchableOpacity 
-                    style={styles.passwordToggle}
-                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    <Image 
-                      source={showConfirmPassword ? require('../../assets/icons/hide.png') : require('../../assets/icons/show.png')} 
-                      style={styles.passwordToggleIcon}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Signup Button */}
-              <TouchableOpacity 
-                style={styles.signupButton}
-                onPress={handleSignup}
-                disabled={loading}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.signupButtonText}>
-                  {loading ? 'Creating Account...' : 'Create Account'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Login Link */}
-              <View style={styles.loginContainer}>
-                <Text style={styles.loginText}>Already have an account? </Text>
-                <TouchableOpacity onPress={() => router.push('/auth/login')}>
-                  <Text style={styles.loginLink}>Sign in</Text>
                 </TouchableOpacity>
               </View>
             </View>
+
+            {/* Avatar Selection */}
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false} 
+              style={styles.avatarChoicesScroll} 
+              contentContainerStyle={styles.avatarChoicesRow}
+            >
+              {avatars.slice(0, 10).map((avatar) => (
+                <TouchableOpacity
+                  key={avatar}
+                  style={[
+                    styles.avatarChoice, 
+                    selectedAvatar === avatar && !customImage && styles.avatarChoiceSelected
+                  ]}
+                  onPress={() => {
+                    setSelectedAvatar(avatar);
+                    setCustomImage(null);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={getAvatarSource(avatar)}
+                    style={styles.avatarImage}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+          {/* Form Fields */}
+          <View style={styles.formFields}>
+            {/* Full Name Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Name</Text>
+              <View style={styles.inputContainer}>
+                <Image 
+                  source={require('../../assets/icons/name.png')} 
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter full name"
+                  placeholderTextColor="#9ca3af"
+                  value={fullName}
+                  onChangeText={(text) => handleTextInputChange(
+                    text, 
+                    setFullName,
+                    () => Alert.alert('Invalid Input', 'Emojis are not allowed in names.')
+                  )}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
+
+            {/* Username Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Username</Text>
+              <View style={styles.inputContainer}>
+                <Image 
+                  source={require('../../assets/icons/username.png')} 
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter user name"
+                  placeholderTextColor="#9ca3af"
+                  value={username}
+                  onChangeText={(text) => handleTextInputChange(
+                    text, 
+                    setUsername,
+                    () => Alert.alert('Invalid Input', 'Emojis are not allowed in usernames.')
+                  )}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
+
+            {/* Email Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <View style={styles.inputContainer}>
+                <Image 
+                  source={require('../../assets/icons/email.png')} 
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  keyboardType="email-address"
+                  placeholder="Enter email"
+                  placeholderTextColor="#9ca3af"
+                  value={email}
+                  onChangeText={(text) => handleTextInputChange(
+                    text, 
+                    setEmail,
+                    () => Alert.alert('Invalid Input', 'Emojis are not allowed in email addresses.')
+                  )}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
+
+            {/* Educational Level Dropdown */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Educational Level</Text>
+              <TouchableOpacity 
+                style={styles.dropdownContainer}
+                onPress={() => setShowEducationalDropdown(true)}
+                activeOpacity={0.7}
+              >
+                <Image 
+                  source={require('../../assets/icons/education.png')} 
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <Text style={[
+                  styles.dropdownText,
+                  !educationalLevel && styles.dropdownPlaceholder
+                ]}>
+                  {getEducationalLevelLabel()}
+                </Text>
+                <Image 
+                  source={require('../../assets/icons/dropdown.png')} 
+                  style={styles.dropdownArrow}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Password Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <View style={styles.inputContainer}>
+                <Image 
+                  source={require('../../assets/icons/password.png')} 
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  secureTextEntry={!showPassword}
+                  placeholder="Enter password"
+                  placeholderTextColor="#9ca3af"
+                  value={password}
+                  onChangeText={(text) => handleTextInputChange(
+                    text, 
+                    setPassword,
+                    () => Alert.alert('Invalid Input', 'Emojis are not allowed in passwords.')
+                  )}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity 
+                  style={styles.passwordToggle}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Image 
+                    source={showPassword ? require('../../assets/icons/hide.png') : require('../../assets/icons/show.png')} 
+                    style={styles.passwordToggleIcon}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Confirm Password Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Confirm Password</Text>
+              <View style={styles.inputContainer}>
+                <Image 
+                  source={require('../../assets/icons/password.png')} 
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  secureTextEntry={!showConfirmPassword}
+                  placeholder="Confirm your password"
+                  placeholderTextColor="#9ca3af"
+                  value={confirmPassword}
+                  onChangeText={(text) => handleTextInputChange(
+                    text, 
+                    setConfirmPassword,
+                    () => Alert.alert('Invalid Input', 'Emojis are not allowed in passwords.')
+                  )}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity 
+                  style={styles.passwordToggle}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <Image 
+                    source={showConfirmPassword ? require('../../assets/icons/hide.png') : require('../../assets/icons/show.png')} 
+                    style={styles.passwordToggleIcon}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Create Account Button */}
+            <TouchableOpacity 
+              style={styles.createAccountButton}
+              onPress={handleSignup}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.createAccountButtonText}>
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Footer */}
+            <View style={styles.footerContainer}>
+              <Text style={styles.footerText}>Already have an account? </Text>
+              <TouchableOpacity onPress={() => router.push('/auth/login')}>
+                <Text style={styles.footerLink}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        
+      </ScrollView>
+
+      {/* Educational Level Dropdown Modal */}
+      <Modal
+        visible={showEducationalDropdown}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowEducationalDropdown(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowEducationalDropdown(false)}
+        >
+          <View style={styles.dropdownModal}>
+            <View style={styles.dropdownHeader}>
+              <Text style={styles.dropdownTitle}>Select Educational Level</Text>
+              <TouchableOpacity 
+                onPress={() => setShowEducationalDropdown(false)}
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.dropdownOptions}>
+              {educationalLevels.map((level) => (
+                <TouchableOpacity
+                  key={level.value}
+                  style={[
+                    styles.dropdownOption,
+                    educationalLevel === level.value && styles.dropdownOptionSelected
+                  ]}
+                  onPress={() => {
+                    setEducationalLevel(level.value);
+                    setShowEducationalDropdown(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[
+                    styles.dropdownOptionText,
+                    educationalLevel === level.value && styles.dropdownOptionTextSelected
+                  ]}>
+                    {level.label}
+                  </Text>
+                  {educationalLevel === level.value && (
+                    <Image 
+                      source={require('../../assets/icons/check.png')} 
+                      style={styles.checkIcon}
+                      resizeMode="contain"
+                    />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -570,126 +583,76 @@ export default Signup;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#6d28d9',
-  },
-  backgroundImage: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-  },
-  keyboardView: {
-    flex: 1,
+    backgroundColor: '#f9f9f9',
   },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 40,
-    paddingBottom: 60,
+    paddingBottom: 40,
   },
-  signupCard: {
+  formCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 16,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  logoContainer: {
-    width: 56,
-    height: 56,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  logo: {
-    width: 32,
-    height: 32,
-  },
-  appName: {
-    fontSize: 20,
-    fontWeight: '700',
+  formTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
     color: '#1f2937',
-    marginBottom: 4,
     textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#6b7280',
-    textAlign: 'center',
-    lineHeight: 24,
+    marginBottom: 32,
   },
   profileSection: {
-    marginBottom: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 20,
-    padding: 20,
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 20,
-    textAlign: 'center',
+    color: '#374151',
+    marginBottom: 16,
   },
   currentSelectionContainer: {
     alignItems: 'center',
     marginBottom: 20,
+    position: 'relative',
   },
   currentSelectionImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    borderWidth: 4,
-    borderColor: '#ffffff',
+    borderWidth: 3,
+    borderColor: '#ef4444',
     overflow: 'hidden',
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
   },
   currentImage: {
     width: '100%',
     height: '100%',
   },
-  currentSelectionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
-  customImageButton: {
-    backgroundColor: '#10b981',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
+  photosIcon: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#3b82f6',
     justifyContent: 'center',
-    marginBottom: 24,
-    shadowColor: '#10b981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#ffffff',
+    zIndex: 10,
+    elevation: 5,
   },
-  customImageButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  avatarSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 16,
-    textAlign: 'center',
+  photosIconImage: {
+    width: 18,
+    height: 18,
+    tintColor: '#ffffff',
   },
   avatarChoicesScroll: {
     marginHorizontal: -12,
@@ -703,18 +666,18 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: '#e5e7eb',
     overflow: 'hidden',
   },
   avatarChoiceSelected: {
-    borderColor: '#ffffff',
+    borderColor: '#ef4444',
     borderWidth: 3,
   },
   avatarImage: {
     width: '100%',
     height: '100%',
   },
-  formContainer: {
+  formFields: {
     flex: 1,
   },
   inputGroup: {
@@ -723,65 +686,126 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ffffff',
+    color: '#374151',
     marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '#ffffff',
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
     paddingHorizontal: 16,
-    paddingVertical: 12, // Reduced height
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  iconContainer: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    paddingVertical: 12,
+    height: 48,
   },
   inputIcon: {
     width: 20,
     height: 20,
     tintColor: '#6b7280',
+    marginRight: 12,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#1f2937',
+    color: '#000000',
+    fontWeight: '400',
+    height: 48,
   },
-  levelScroll: {
-    flex: 1,
-  },
-  levelContainer: {
-    gap: 8,
-  },
-  levelOption: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+  dropdownContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e5e7eb',
-    backgroundColor: '#f9fafb',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    height: 48,
   },
-  levelOptionSelected: {
-    backgroundColor: '#3D14C4',
-    borderColor: '#3D14C4',
+  dropdownText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1f2937',
   },
-  levelOptionText: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontWeight: '500',
+  dropdownPlaceholder: {
+    color: '#9ca3af',
   },
-  levelOptionTextSelected: {
-    color: '#ffffff',
+  dropdownArrow: {
+    width: 16,
+    height: 16,
+    tintColor: '#6b7280',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dropdownModal: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    width: '85%',
+    maxHeight: '70%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 16,
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  dropdownTitle: {
+    fontSize: 18,
     fontWeight: '600',
+    color: '#1f2937',
+  },
+  closeButton: {
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: '#6b7280',
+    fontWeight: 'bold',
+  },
+  dropdownOptions: {
+    maxHeight: 300,
+  },
+  dropdownOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  dropdownOptionSelected: {
+    backgroundColor: '#f0f9ff',
+  },
+  dropdownOptionText: {
+    fontSize: 16,
+    color: '#374151',
+  },
+  dropdownOptionTextSelected: {
+    color: '#4f46e5',
+    fontWeight: '600',
+  },
+  checkIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#4f46e5',
   },
   passwordToggle: {
     padding: 4,
@@ -791,37 +815,33 @@ const styles = StyleSheet.create({
     height: 20,
     tintColor: '#6b7280',
   },
-  signupButton: {
-    backgroundColor: '#6d28d9',
-    borderRadius: 12,
-    paddingVertical: 14,
+  createAccountButton: {
+    backgroundColor: '#4f46e5',
+    borderRadius: 25,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
-    shadowColor: '#6d28d9',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    marginTop: 24,
+    height: 52,
   },
-  signupButtonText: {
+  createAccountButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
-  loginContainer: {
+  footerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 32,
+    marginTop: 24,
   },
-  loginText: {
+  footerText: {
     fontSize: 14,
     color: '#6b7280',
   },
-  loginLink: {
+  footerLink: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#6d28d9',
+    fontWeight: 'bold',
+    color: '#4f46e5',
   },
 });

@@ -1,7 +1,7 @@
 // File: login.tsx
 // Description: Handles user authentication and login functionality with improved UI and error handling.
 
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, StatusBar, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Alert, StatusBar, ScrollView, Image } from 'react-native';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { router } from 'expo-router';
@@ -70,126 +70,112 @@ const Login = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#6d28d9" />
+      <StatusBar barStyle="light-content" backgroundColor="#3D14C4" />
       
-      {/* Background Image */}
-      <Image
-        source={require('../../assets/images/auth_background.png')}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      />
-      
-      <KeyboardAvoidingView 
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Login Card */}
-          <View style={styles.loginCard}>
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require('../../assets/images/flashlearnlogo.png')}
-                  style={styles.logo}
+        {/* Purple Header Section (~40% of screen) */}
+        <View style={styles.headerSection}>
+          <Text style={styles.helloText}>Hello,</Text>
+          <Text style={styles.welcomeText}>Welcome back</Text>
+          
+          {/* Floating Shapes */}
+          <View style={styles.shape1} />
+          <View style={styles.shape2} />
+        </View>
+        
+        {/* Light Gray Content Section (~60% of screen) */}
+        
+          <View style={styles.formCard}>
+            <Text style={styles.formTitle}>Sign In</Text>
+            
+            {/* Email Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <View style={styles.inputContainer}>
+                <Image 
+                  source={require('../../assets/icons/email.png')} 
+                  style={styles.inputIcon}
                   resizeMode="contain"
                 />
+                <TextInput
+                  style={styles.input}
+                  keyboardType="email-address"
+                  placeholder="Enter email"
+                  placeholderTextColor="#9ca3af"
+                  value={email}
+                  onChangeText={(text) => handleTextInputChange(
+                    text, 
+                    setEmail,
+                    () => Alert.alert('Invalid Input', 'Emojis are not allowed in email addresses.')
+                  )}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
               </View>
-              <Text style={styles.appName}>Welcome Back</Text>
-              <Text style={styles.subtitle}>Sign in to continue your learning journey</Text>
             </View>
 
-            {/* Login Form */}
-            <View style={styles.formContainer}>
-              {/* Email Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Email Address</Text>
-                <View style={styles.inputContainer}>
-                  <View style={styles.iconContainer}>
-                    <Image 
-                      source={require('../../assets/icons/email.png')} 
-                      style={styles.inputIcon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <TextInput
-                    style={styles.input}
-                    keyboardType="email-address"
-                    placeholder="Enter your email"
-                    placeholderTextColor="#9ca3af"
-                    value={email}
-                    onChangeText={(text) => handleTextInputChange(
-                      text, 
-                      setEmail,
-                      () => Alert.alert('Invalid Input', 'Emojis are not allowed in email addresses.')
-                    )}
-                    autoCapitalize="none"
-                    autoCorrect={false}
+            {/* Password Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <View style={styles.inputContainer}>
+                <Image 
+                  source={require('../../assets/icons/password.png')} 
+                  style={styles.inputIcon}
+                  resizeMode="contain"
+                />
+                <TextInput
+                  style={styles.input}
+                  secureTextEntry={!showPassword}
+                  placeholder="Enter password"
+                  placeholderTextColor="#9ca3af"
+                  value={password}
+                  onChangeText={(text) => handleTextInputChange(
+                    text, 
+                    setPassword,
+                    () => Alert.alert('Invalid Input', 'Emojis are not allowed in passwords.')
+                  )}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity 
+                  style={styles.passwordToggle}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Image 
+                    source={showPassword ? require('../../assets/icons/hide.png') : require('../../assets/icons/show.png')} 
+                    style={styles.passwordToggleIcon}
+                    resizeMode="contain"
                   />
-                </View>
-              </View>
-
-              {/* Password Input */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Password</Text>
-                <View style={styles.inputContainer}>
-                  <View style={styles.iconContainer}>
-                    <Image 
-                      source={require('../../assets/icons/password.png')} 
-                      style={styles.inputIcon}
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <TextInput
-                    style={styles.input}
-                    secureTextEntry={!showPassword}
-                    placeholder="Enter your password"
-                    placeholderTextColor="#9ca3af"
-                    value={password}
-                    onChangeText={(text) => handleTextInputChange(
-                      text, 
-                      setPassword,
-                      () => Alert.alert('Invalid Input', 'Emojis are not allowed in passwords.')
-                    )}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                  <TouchableOpacity 
-                    style={styles.passwordToggle}
-                    onPress={() => setShowPassword(!showPassword)}
-                  >
-                    <Image 
-                      source={showPassword ? require('../../assets/icons/hide.png') : require('../../assets/icons/show.png')} 
-                      style={styles.passwordToggleIcon}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Login Button */}
-              <TouchableOpacity 
-                style={styles.loginButton}
-                onPress={handleLogin}
-                disabled={loading}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.loginButtonText}>
-                  {loading ? 'Signing In...' : 'Sign In'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Signup Link */}
-              <View style={styles.signupContainer}>
-                <Text style={styles.signupText}>Don&apos;t have an account? </Text>
-                <TouchableOpacity onPress={() => router.push('/auth/signup')}>
-                  <Text style={styles.signupLink}>Sign up</Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+            {/* Sign In Button */}
+            <TouchableOpacity 
+              style={styles.signInButton}
+              onPress={handleLogin}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.signInButtonText}>
+                {loading ? 'Signing In...' : 'Sign In'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Footer Link */}
+            <View style={styles.footerContainer}>
+              <Text style={styles.footerText}>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => router.push('/auth/signup')}>
+                <Text style={styles.footerLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
+          
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -199,78 +185,82 @@ export default Login;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#6d28d9',
-  },
-  backgroundImage: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-  },
-  keyboardView: {
-    flex: 1,
+    backgroundColor: '#3D14C4',
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
+  },
+  headerSection: {
+    backgroundColor: '#3D14C4',
+    height: '40%',
     paddingTop: 60,
-    paddingBottom: 40,
+    paddingHorizontal: 24,
     justifyContent: 'center',
+    position: 'relative',
   },
-  loginCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 28,
-    padding: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.2,
-    shadowRadius: 32,
-    elevation: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 36,
-  },
-  logoContainer: {
-    width: 72,
-    height: 72,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  logo: {
-    width: 44,
-    height: 44,
-  },
-  appName: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#1f2937',
+  helloText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#ffffff',
     marginBottom: 8,
-    letterSpacing: -0.5,
-    textAlign: 'center',
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#6b7280',
-    textAlign: 'center',
-    fontWeight: '400',
-    lineHeight: 22,
+  welcomeText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
-  formContainer: {
+  shape1: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    top: '20%',
+    left: -30,
+  },
+  shape2: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    top: '15%',
+    right: '10%',
+  },
+  contentSection: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 0,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
+  formCard: {
+    backgroundColor: '#ffffff',
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 12,
+    marginTop: -20,
+    height: '70%',
+    borderTopEndRadius: 20,
+    borderTopStartRadius: 20,
+  },
+  formTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    textAlign: 'center',
+    marginBottom: 32,
   },
   inputGroup: {
     marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: '#374151',
     marginBottom: 8,
@@ -278,78 +268,62 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f9fafb',
-    borderRadius: 16,
-    borderWidth: 2,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    borderWidth: 1,
     borderColor: '#e5e7eb',
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  iconContainer: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    paddingVertical: 12,
+    height: 48,
   },
   inputIcon: {
     width: 20,
     height: 20,
     tintColor: '#6b7280',
+    marginRight: 12,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#1f2937',
-    fontWeight: '500',
+    color: '#000000',
+    fontWeight: '400',
+    height: 48,
   },
   passwordToggle: {
-    padding: 6,
-    marginLeft: 8,
+    padding: 4,
   },
   passwordToggleIcon: {
     width: 20,
     height: 20,
     tintColor: '#6b7280',
   },
-  loginButton: {
-    backgroundColor: '#6d28d9',
-    borderRadius: 16,
+  signInButton: {
+    backgroundColor: '#3D14C4',
+    borderRadius: 25,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 28,
-    shadowColor: '#6d28d9',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 10,
+    marginTop: 24,
+    height: 55,
   },
-  loginButtonText: {
+  signInButtonText: {
     color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-  signupContainer: {
+  footerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 36,
+    marginTop: 24,
   },
-  signupText: {
-    fontSize: 15,
+  footerText: {
+    fontSize: 14,
     color: '#6b7280',
-    fontWeight: '400',
   },
-  signupLink: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#6d28d9',
+  footerLink: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#3D14C4',
   },
 });
