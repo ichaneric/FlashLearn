@@ -1,5 +1,5 @@
 // File: route.ts
-// Description: Handles user profile updates with image uploads using multipart/form-data
+// Description: Handles user profile updates with image uploads using Supabase Storage
 
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/prisma/singleton';
@@ -7,8 +7,12 @@ import { extractAndVerifyToken } from '@/lib/jwtUtils';
 import { addCorsHeaders, createCorsPreflightResponse } from '@/lib/corsUtils';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcryptjs';
-import fs from 'fs';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Enhanced logging function
 function logError(step: string, error: any, additionalData?: any) {
@@ -32,7 +36,7 @@ export async function OPTIONS(req: NextRequest) {
 }
 
 /**
- * Updates user profile with image upload support (PUT /api/user/update-profile)
+ * Updates user profile with image upload support using Supabase Storage (PUT /api/user/update-profile)
  */
 export async function PUT(req: NextRequest) {
   const requestId = uuidv4().substring(0, 8);
@@ -76,13 +80,6 @@ export async function PUT(req: NextRequest) {
     // Parse multipart form data using native FormData
     console.log(`[UPDATE_PROFILE ${requestId}] Parsing multipart form data...`);
     const formData = await req.formData();
-    
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-      console.log(`[UPDATE_PROFILE ${requestId}] Created uploads directory:`, uploadsDir);
-    }
 
     // Extract form fields
     const full_name = formData.get('full_name') as string;
@@ -91,16 +88,16 @@ export async function PUT(req: NextRequest) {
     const password = formData.get('password') as string;
     const profileImage = formData.get('profileImage') as File | null;
 
-         console.log(`[UPDATE_PROFILE ${requestId}] Form data extracted:`, {
-       hasFullName: !!full_name,
-       hasEducationalLevel: !!educational_level,
-       hasPassword: !!password,
-       hasProfileImage: !!profileImage,
-       profile: formData.get('profile'),
-     });
+    console.log(`[UPDATE_PROFILE ${requestId}] Form data extracted:`, {
+      hasFullName: !!full_name,
+      hasEducationalLevel: !!educational_level,
+      hasPassword: !!password,
+      hasProfileImage: !!profileImage,
+      profile: formData.get('profile'),
+    });
 
-    // Handle profile image upload
-    let profileImageFilename = null;
+    // Handle profile image upload to Supabase Storage
+    let profileImageUrl = null;
     
     if (profileImage) {
       console.log(`[UPDATE_PROFILE ${requestId}] Processing uploaded image:`, {
@@ -149,67 +146,96 @@ export async function PUT(req: NextRequest) {
 
       const username = sanitizeFilename(currentUser.username || 'user');
       const emailPart = currentUser.email ? sanitizeFilename(currentUser.email.split('@')[0]) : 'email';
-      const extension = path.extname(profileImage.name || 'image.jpg');
+      const extension = profileImage.name ? profileImage.name.split('.').pop() || '.jpg' : '.jpg';
       const timestamp = Date.now();
       
       // Format: username_email_timestamp.ext
-      profileImageFilename = `${username}_${emailPart}_${timestamp}${extension}`;
+      const filename = `${username}_${emailPart}_${timestamp}${extension}`;
       
-      console.log(`[UPDATE_PROFILE ${requestId}] Generated filename:`, profileImageFilename);
+      console.log(`[UPDATE_PROFILE ${requestId}] Generated filename:`, filename);
       
-      // Convert File to Buffer and save
+      // Convert File to Buffer
       const arrayBuffer = await profileImage.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const finalPath = path.join(uploadsDir, profileImageFilename);
-      fs.writeFileSync(finalPath, buffer);
       
-      console.log(`[UPDATE_PROFILE ${requestId}] Image saved:`, {
-        finalPath,
-        filename: profileImageFilename,
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('profile-images')
+        .upload(filename, buffer, {
+          contentType: profileImage.type,
+          upsert: false
+        });
+
+      if (uploadError) {
+        logError('SUPABASE_UPLOAD_FAILED', uploadError, { requestId, filename });
+        const response = NextResponse.json({ 
+          error: 'Failed to upload image' 
+        }, { status: 500 });
+        return addCorsHeaders(response, req.headers.get('origin'));
+      }
+
+      // Get public URL for the uploaded image
+      const { data: urlData } = supabase.storage
+        .from('profile-images')
+        .getPublicUrl(filename);
+
+      profileImageUrl = urlData.publicUrl;
+      
+      console.log(`[UPDATE_PROFILE ${requestId}] Image uploaded successfully:`, {
+        filename,
+        publicUrl: profileImageUrl,
         size: buffer.length,
       });
 
-      // Delete old profile image if it exists and is different
-      if (currentUser.profile && currentUser.profile !== profileImageFilename) {
-        const oldImagePath = path.join(uploadsDir, currentUser.profile);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-          console.log(`[UPDATE_PROFILE ${requestId}] Deleted old profile image:`, oldImagePath);
+      // Delete old profile image from Supabase Storage if it exists and is different
+      if (currentUser.profile && currentUser.profile !== filename) {
+        // Check if old profile is a custom uploaded image (not a default avatar)
+        if (!currentUser.profile.match(/^avatar_[1-9]|10\.jpg$/)) {
+          const { error: deleteError } = await supabase.storage
+            .from('profile-images')
+            .remove([currentUser.profile]);
+          
+          if (deleteError) {
+            console.log(`[UPDATE_PROFILE ${requestId}] Warning: Failed to delete old image:`, deleteError);
+          } else {
+            console.log(`[UPDATE_PROFILE ${requestId}] Deleted old profile image:`, currentUser.profile);
+          }
         }
       }
     }
 
-         // Build update object
-     const updateData: any = {};
-     
-     if (full_name !== undefined && full_name !== null) {
-       updateData.full_name = full_name.trim() || 'User';
-     }
-     
-     if (educational_level !== undefined && educational_level !== null) {
-       const validLevels = ['elementary', 'junior_highschool', 'senior_highschool', 'college'];
-       if (!validLevels.includes(educational_level)) {
-         const response = NextResponse.json({ 
-           error: 'Invalid educational level' 
-         }, { status: 400 });
-         return addCorsHeaders(response, req.headers.get('origin'));
-       }
-       updateData.educational_level = educational_level;
-     }
-     
-     // Handle profile updates (both uploaded images and default avatars)
-     const profile = formData.get('profile') as string;
-     if (profile) {
-       // Check if it's a default avatar (1-10.jpg) or custom uploaded image
-       if (profileImageFilename) {
-         // Custom uploaded image
-         updateData.profile = profileImageFilename;
-       } else if (profile.match(/^[1-9]|10\.jpg$/)) {
-         // Default avatar selection
-         updateData.profile = profile;
-       }
-     }
+    // Build update object
+    const updateData: any = {};
     
+    if (full_name !== undefined && full_name !== null) {
+      updateData.full_name = full_name.trim() || 'User';
+    }
+    
+    if (educational_level !== undefined && educational_level !== null) {
+      const validLevels = ['elementary', 'junior_highschool', 'senior_highschool', 'college'];
+      if (!validLevels.includes(educational_level)) {
+        const response = NextResponse.json({ 
+          error: 'Invalid educational level' 
+        }, { status: 400 });
+        return addCorsHeaders(response, req.headers.get('origin'));
+      }
+      updateData.educational_level = educational_level;
+    }
+    
+    // Handle profile updates (both uploaded images and default avatars)
+    const profile = formData.get('profile') as string;
+    if (profile) {
+      // Check if it's a default avatar (avatar_1.jpg to avatar_10.jpg) or custom uploaded image
+      if (profileImageUrl) {
+        // Custom uploaded image - store the filename
+        const filename = profileImageUrl.split('/').pop() || '';
+        updateData.profile = filename;
+      } else if (profile.match(/^avatar_[1-9]|10\.jpg$/)) {
+        // Default avatar selection
+        updateData.profile = profile;
+      }
+    }
+   
     if (password !== undefined && password !== null && password !== '') {
       if (password.length < 6) {
         const response = NextResponse.json({ 
@@ -274,28 +300,33 @@ export async function PUT(req: NextRequest) {
       profile: updatedUser.profile
     });
 
-               // Build profile URL for response
-      let profileUrl = null;
-      let profileImageUrl = null;
-      if (updatedUser.profile) {
-        // Use the network IP address that mobile app can reach
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://192.168.254.104:3001';
-        profileUrl = `${baseUrl}/api/uploads/${updatedUser.profile}`;
-        profileImageUrl = updatedUser.profile; // Store filename for frontend
+    // Build profile URL for response
+    let finalProfileUrl = null;
+    if (updatedUser.profile) {
+      if (updatedUser.profile.match(/^avatar_[1-9]|10\.jpg$/)) {
+        // Default avatar - use local path
+        finalProfileUrl = `/api/avatar/${updatedUser.profile}`;
+      } else {
+        // Custom uploaded image - use Supabase URL
+        const { data: urlData } = supabase.storage
+          .from('profile-images')
+          .getPublicUrl(updatedUser.profile);
+        finalProfileUrl = urlData.publicUrl;
       }
+    }
 
-     const response = NextResponse.json({
-       id: updatedUser.user_id,
-       username: updatedUser.username,
-       email: updatedUser.email,
-       educationalLevel: updatedUser.educational_level,
-       profileUrl: profileUrl,
-       profileImageUrl: profileImageUrl, // Add this for frontend compatibility
-       full_name: updatedUser.full_name,
-       profile: updatedUser.profile, // Keep for backward compatibility
-       isAdmin: updatedUser.isAdmin,
-       message: 'Profile updated successfully'
-     });
+    const response = NextResponse.json({
+      id: updatedUser.user_id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      educationalLevel: updatedUser.educational_level,
+      profileUrl: finalProfileUrl,
+      profileImageUrl: finalProfileUrl,
+      full_name: updatedUser.full_name,
+      profile: updatedUser.profile,
+      isAdmin: updatedUser.isAdmin,
+      message: 'Profile updated successfully'
+    });
     return addCorsHeaders(response, req.headers.get('origin'));
     
   } catch (error: any) {

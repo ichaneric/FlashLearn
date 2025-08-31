@@ -2,11 +2,9 @@
 // Description: Admin analytics API endpoint providing subject analytics and engagement metrics
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/prisma/singleton';
 import { extractAndVerifyToken } from '@/lib/jwtUtils';
 import { addCorsHeaders, createCorsPreflightResponse } from '@/lib/corsUtils';
-
-const prisma = new PrismaClient();
 
 // Handle OPTIONS request for CORS preflight
 export async function OPTIONS(req: NextRequest) {
@@ -103,7 +101,5 @@ export async function GET(req: NextRequest) {
     console.error('[GET admin/analytics] Error:', error);
     const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     return addCorsHeaders(response, req.headers.get('origin'));
-  } finally {
-    await prisma.$disconnect();
   }
 }

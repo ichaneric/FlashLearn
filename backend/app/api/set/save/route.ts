@@ -2,22 +2,9 @@
 // Description: API endpoint to handle saving and unsaving sets, tracking learner counts with proper user scoping
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/prisma/singleton';
 import { extractAndVerifyToken } from '@/lib/jwtUtils';
 import { addCorsHeaders, createCorsPreflightResponse } from '@/lib/corsUtils';
-
-// Create a single Prisma client instance
-let prisma: PrismaClient;
-
-if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient();
-} else {
-  // In development, use a global variable to prevent multiple instances
-  if (!(global as any).prisma) {
-    (global as any).prisma = new PrismaClient();
-  }
-  prisma = (global as any).prisma;
-}
 
 // Handle OPTIONS request for CORS preflight
 export async function OPTIONS(req: NextRequest) {

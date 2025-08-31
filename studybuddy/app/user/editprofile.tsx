@@ -85,7 +85,7 @@ const EditProfile = () => {
     
     // Use profileImageUrl from API if available
     if (user.profileImageUrl) {
-      // Check if it's already a full URL
+      // Check if it's already a full URL (Supabase Storage URL)
       if (user.profileImageUrl.startsWith('http://') || user.profileImageUrl.startsWith('https://')) {
         console.log('[EditProfile] Using full URL profileImageUrl:', user.profileImageUrl);
         return { uri: user.profileImageUrl };
@@ -99,9 +99,10 @@ const EditProfile = () => {
       
       // If it's just a filename, check if it's a custom uploaded image (not an avatar)
       if (user.profileImageUrl.includes('_') && !user.profileImageUrl.startsWith('avatar_')) {
-        const uploadUrl = `${createApiUrl(API_ENDPOINTS.UPLOADS)}/${user.profileImageUrl}`;
-        console.log('[EditProfile] Using upload URL:', uploadUrl);
-        return { uri: uploadUrl };
+        // This should be a Supabase Storage URL, but if it's just a filename, construct the URL
+        const supabaseUrl = `https://ssppxsbrphszkvgajcwq.supabase.co/storage/v1/object/public/profile-images/${user.profileImageUrl}`;
+        console.log('[EditProfile] Using Supabase URL:', supabaseUrl);
+        return { uri: supabaseUrl };
       }
       
       // Fallback to default if profileImageUrl is invalid
@@ -115,7 +116,7 @@ const EditProfile = () => {
       return PROFILE_IMAGE_MAP['1.jpg']; // Return local asset directly
     }
     
-    // Check if it's a default avatar (1.jpg, 2.jpg, avatar_1.jpg, etc.)
+    // Check if it's a default avatar (avatar_1.jpg to avatar_10.jpg or 1.jpg to 10.jpg)
     if (PROFILE_IMAGE_MAP[profileName]) {
       console.log('[EditProfile] Using legacy default avatar from local assets:', profileName);
       return PROFILE_IMAGE_MAP[profileName]; // Return local asset directly
@@ -123,14 +124,15 @@ const EditProfile = () => {
     
     // Check if it's a custom uploaded image (contains underscore pattern for username_email_timestamp)
     if (profileName.includes('_') && !profileName.startsWith('avatar_')) {
-      const uploadUrl = `${createApiUrl(API_ENDPOINTS.UPLOADS)}/${profileName}`;
-      console.log('[EditProfile] Using legacy upload URL:', uploadUrl);
-      return { uri: uploadUrl };
+      // This should be a Supabase Storage URL, but if it's just a filename, construct the URL
+      const supabaseUrl = `https://ssppxsbrphszkvgajcwq.supabase.co/storage/v1/object/public/profile-images/${profileName}`;
+      console.log('[EditProfile] Using legacy Supabase URL for custom image:', supabaseUrl);
+      return { uri: supabaseUrl };
     }
     
-    // Fallback to default
-    console.log('[EditProfile] Fallback to default avatar');
-    return PROFILE_IMAGE_MAP['1.jpg']; // Return local asset directly
+    // Final fallback
+    console.log('[EditProfile] Final fallback to default avatar');
+    return PROFILE_IMAGE_MAP['1.jpg'];
   };
 
   /**

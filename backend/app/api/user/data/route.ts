@@ -102,12 +102,12 @@ export async function GET(req: NextRequest) {
         // For default avatars, return just the filename
         // The frontend will use the local asset mapping
         profileImageUrl = user.profile;
-      } else if (user.profile.includes('_') || user.profile.includes('@')) {
-        // For custom uploaded images (contains underscore or email pattern), return both filename and full URL
+      } else if (user.profile.includes('_') && !user.profile.startsWith('avatar_')) {
+        // For custom uploaded images (contains underscore pattern for username_email_timestamp)
+        // Return the full Supabase Storage URL
         profileImageUrl = user.profile;
-        // Use the network IP address that mobile app can reach
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://192.168.254.104:3001';
-        profileUrl = `${baseUrl}/api/uploads/${user.profile}`;
+        const supabaseUrl = process.env.SUPABASE_URL;
+        profileUrl = `${supabaseUrl}/storage/v1/object/public/profile-images/${user.profile}`;
       } else {
         // For any other case, treat as default avatar
         profileImageUrl = user.profile;

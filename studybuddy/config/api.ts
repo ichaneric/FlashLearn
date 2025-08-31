@@ -16,6 +16,7 @@ const API_CONFIGS = {
   network: 'http://192.168.254.104:3001',
   
   // Production (when deployed to Vercel)
+  // Updated to match your actual Vercel deployment
   production: 'https://flash-learn-app.vercel.app',
 };
 
@@ -24,14 +25,24 @@ const API_CONFIGS = {
  * @returns {string} The API base URL
  */
 export const getApiBaseUrl = (): string => {
-  // Check if we're in production environment
-  if (__DEV__) {
-    // Development mode - use network IP for mobile testing
-    return API_CONFIGS.network;
-  } else {
-    // Production mode - use Vercel URL
-    return API_CONFIGS.production;
-  }
+  // TEMPORARY FIX: Force production URL for APK testing
+  // TODO: Restore environment detection after testing
+  const url = API_CONFIGS.production;
+  
+  // Debug logging
+  console.log('[API] Using production URL:', url);
+  console.log('[API] __DEV__ value:', __DEV__);
+  
+  return url;
+  
+  // Original logic (commented out for now):
+  // if (__DEV__) {
+  //   // Development mode - use network IP for mobile testing
+  //   return API_CONFIGS.network;
+  // } else {
+  //   // Production mode - use Vercel URL
+  //   return API_CONFIGS.production;
+  // }
 };
 
 /**

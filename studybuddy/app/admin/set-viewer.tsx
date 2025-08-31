@@ -249,9 +249,11 @@ const AdminSetViewer = () => {
               contentContainerStyle={styles.cardScrollContent}
               showsVerticalScrollIndicator={false}
             >
-              <Text style={styles.cardText}>
-                {isFlipped ? currentCard.card_answer : currentCard.card_question}
-              </Text>
+              <View style={styles.cardTextContainer}>
+                <Text style={styles.cardText}>
+                  {isFlipped ? currentCard.card_answer : currentCard.card_question}
+                </Text>
+              </View>
             </ScrollView>
             
             {/* Flip hint */}
@@ -451,6 +453,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 20,
+  },
+  cardTextContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardText: {
     fontSize: 18,

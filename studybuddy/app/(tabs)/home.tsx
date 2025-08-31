@@ -214,14 +214,22 @@ const Home = () => {
       return PROFILE_IMAGE_MAP['1.jpg'];
     }
     
-    // Check if it's a custom uploaded image (contains underscore or email pattern)
-    if (profileImage.includes('_') || profileImage.includes('@')) {
-      return { uri: `${createApiUrl(API_ENDPOINTS.UPLOADS)}/${profileImage}` };
+    // Check if it's a default avatar (avatar_1.jpg to avatar_10.jpg or 1.jpg to 10.jpg)
+    if (profileImage.match(/^avatar_[1-9]|10\.jpg$/) || profileImage.match(/^[1-9]|10\.jpg$/)) {
+      return PROFILE_IMAGE_MAP[profileImage] || PROFILE_IMAGE_MAP['1.jpg'];
     }
     
-    // Check if it's a default avatar (1-10.jpg)
-    if (PROFILE_IMAGE_MAP[profileImage]) {
-      return PROFILE_IMAGE_MAP[profileImage];
+    // Check if it's already a full URL (Supabase Storage URL)
+    if (profileImage.startsWith('http://') || profileImage.startsWith('https://')) {
+      return { uri: profileImage };
+    }
+    
+    // Check if it's a custom uploaded image (contains underscore pattern for username_email_timestamp)
+    if (profileImage.includes('_') && !profileImage.startsWith('avatar_')) {
+      // This should be a Supabase Storage URL, but if it's just a filename, construct the URL
+      // The backend should now return the full Supabase URL, but fallback just in case
+      const supabaseUrl = `https://ssppxsbrphszkvgajcwq.supabase.co/storage/v1/object/public/profile-images/${profileImage}`;
+      return { uri: supabaseUrl };
     }
     
     // Fallback to default
@@ -582,6 +590,15 @@ const Home = () => {
 
       {/* Content */}
       <View style={styles.content}>
+        {/* Debug Info - Remove in production */}
+        {__DEV__ && (
+          <View style={styles.debugInfo}>
+            <Text style={styles.debugText}>🔍 DEBUG: Main Stream (All Users)</Text>
+            <Text style={styles.debugText}>📊 Sets Count: {filteredSets.length}</Text>
+            <Text style={styles.debugText}>🔗 API: {API_ENDPOINTS.SET_POSTED}</Text>
+          </View>
+        )}
+        
         <FlatList
           data={filteredSets}
           renderItem={renderSetBox}
@@ -912,6 +929,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#4f46e5',
     fontWeight: 'bold',
+  },
+  debugInfo: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#333',
+    fontWeight: '500',
   },
 });
 

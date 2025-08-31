@@ -13,6 +13,24 @@ import { handleTextInputChange } from '../../utils/emojiPrevention';
 
 const { width } = Dimensions.get('window');
 
+// Subject options for dropdown
+const SUBJECT_OPTIONS = [
+  { label: 'Select Subject', value: '' },
+  { label: 'Science', value: 'science' },
+  { label: 'Math', value: 'math' },
+  { label: 'History', value: 'history' },
+  { label: 'English', value: 'english' },
+  { label: 'Geography', value: 'geography' },
+  { label: 'Biology', value: 'biology' },
+  { label: 'Chemistry', value: 'chemistry' },
+  { label: 'Physics', value: 'physics' },
+  { label: 'Literature', value: 'literature' },
+  { label: 'Art', value: 'art' },
+  { label: 'Music', value: 'music' },
+  { label: 'Computer Science', value: 'computer_science' },
+  { label: 'Economics', value: 'economics' },
+];
+
 const Createset = () => {
   // Basic set data
   const [setTitle, setSetTitle] = useState('');
@@ -32,6 +50,7 @@ const Createset = () => {
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   const maxFlashcards = 30;
 
   // AI Wizard state with DeepSeek V3 integration
@@ -394,17 +413,58 @@ const Createset = () => {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Subject</Text>
-            <TextInput
-              style={styles.input}
-              value={subject}
-                              onChangeText={(text) => handleTextInputChange(
-                  text, 
-                  setSubject,
-                  () => Alert.alert('Invalid Input', 'Emojis are not allowed in subjects.')
-                )}
-              placeholder="Enter subject"
-              placeholderTextColor="#999"
-            />
+            <TouchableOpacity 
+              style={styles.dropdownButton}
+              onPress={() => setShowSubjectDropdown(!showSubjectDropdown)}
+            >
+              <Text style={[
+                styles.dropdownButtonText,
+                !subject && styles.dropdownButtonTextPlaceholder
+              ]}>
+                {subject ? SUBJECT_OPTIONS.find(opt => opt.value === subject)?.label : 'Select Subject'}
+              </Text>
+              <Image 
+                source={require('../../assets/icons/dropdown.png')} 
+                style={[
+                  styles.dropdownIcon,
+                  showSubjectDropdown && styles.dropdownIconRotated
+                ]} 
+              />
+            </TouchableOpacity>
+            
+            {/* Subject Dropdown */}
+            {showSubjectDropdown && (
+              <View style={styles.subjectDropdown}>
+                <ScrollView 
+                  style={styles.dropdownScrollView}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {SUBJECT_OPTIONS.map((option) => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.dropdownItem,
+                        subject === option.value && styles.dropdownItemActive
+                      ]}
+                      onPress={() => {
+                        setSubject(option.value);
+                        setShowSubjectDropdown(false);
+                      }}
+                    >
+                      <Text style={[
+                        styles.dropdownText,
+                        subject === option.value && styles.dropdownTextActive
+                      ]}>
+                        {option.label}
+                      </Text>
+                      {subject === option.value && (
+                        <Image source={require('../../assets/icons/check.png')} style={styles.checkIcon} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
           </View>
 
           {/* Description (30 chars max) */}
@@ -1282,5 +1342,82 @@ const styles = StyleSheet.create({
   draftStatusTime: {
     color: '#FFFFFF',
     fontSize: 12,
+  },
+  // Dropdown styles
+  dropdownButton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dropdownButtonText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  dropdownButtonTextPlaceholder: {
+    color: '#999',
+  },
+  dropdownIcon: {
+    width: 20,
+    height: 20,
+    tintColor: '#6b7280',
+  },
+  dropdownIconRotated: {
+    transform: [{ rotate: '180deg' }],
+  },
+  subjectDropdown: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    maxHeight: 300,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 1000,
+  },
+  dropdownScrollView: {
+    maxHeight: 280,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f3f4',
+  },
+  dropdownItemActive: {
+    backgroundColor: '#f0f4ff',
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+  },
+  dropdownTextActive: {
+    color: '#4f46e5',
+    fontWeight: '600',
+  },
+  checkIcon: {
+    width: 18,
+    height: 18,
+    tintColor: '#4f46e5',
   },
 });

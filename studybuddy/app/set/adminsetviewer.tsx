@@ -264,41 +264,16 @@ const AdminSetViewer = () => {
                   contentContainerStyle={styles.cardScrollContent}
                   showsVerticalScrollIndicator={false}
                 >
-                  <Animated.View
-                    style={{
-                      transform: [
-                        {
-                          rotateY: flipAnimation.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: ['0deg', '-180deg'],
-                          }),
-                        },
-                      ],
-                    }}
-                  >
+                  <View style={styles.cardTextContainer}>
                     <Text style={styles.cardText}>
                       {showAnswer ? currentCard.card_answer : currentCard.card_question}
                     </Text>
-                  </Animated.View>
+                  </View>
                 </ScrollView>
-                <Animated.View 
-                  style={[
-                    styles.flipHint,
-                    {
-                      transform: [
-                        {
-                          rotateY: flipAnimation.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: ['0deg', '-180deg'],
-                          }),
-                        },
-                      ],
-                    },
-                  ]}
-                >
+                <View style={styles.flipHint}>
                   <Text style={styles.flipIcon}>↻</Text>
                   <Text style={styles.flipText}>Tap to flip</Text>
-                </Animated.View>
+                </View>
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -501,6 +476,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 20,
+  },
+  cardTextContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardText: {
     fontSize: 20, // Larger font size

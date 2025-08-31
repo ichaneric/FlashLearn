@@ -132,8 +132,10 @@ const Signup = () => {
       console.log('[SIGNUP] Using custom image:', !!customImage);
       console.log('[SIGNUP] Selected avatar:', selectedAvatar);
       
-      // Temporary debug alert
-      Alert.alert('Debug Info', `API URL: ${apiUrl}\nUsing custom image: ${!!customImage}\nSelected avatar: ${selectedAvatar}`);
+      // Debug logging for development only
+      if (__DEV__) {
+        console.log('[SIGNUP] Debug Info:', { apiUrl, customImage: !!customImage, selectedAvatar });
+      }
 
       let response;
 

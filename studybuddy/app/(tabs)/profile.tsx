@@ -286,7 +286,7 @@ import { loadQuizRecords } from '../../utils/quizStorage';
       if (user.profileImageUrl) {
         console.log('[Profile] Processing profileImageUrl:', user.profileImageUrl);
         
-        // Check if it's already a full URL
+        // Check if it's already a full URL (Supabase Storage URL)
         if (user.profileImageUrl.startsWith('http://') || user.profileImageUrl.startsWith('https://')) {
           console.log('[Profile] Using full URL profileImageUrl:', user.profileImageUrl);
           return { uri: user.profileImageUrl };
@@ -300,40 +300,40 @@ import { loadQuizRecords } from '../../utils/quizStorage';
         
         // If it's just a filename, check if it's a custom uploaded image (not an avatar)
         if (user.profileImageUrl.includes('_') && !user.profileImageUrl.startsWith('avatar_')) {
-          const uploadUrl = `${createApiUrl(API_ENDPOINTS.UPLOADS)}/${user.profileImageUrl}`;
-          console.log('[Profile] Using upload URL for custom image:', uploadUrl);
-          return { uri: uploadUrl };
+          // This should be a Supabase Storage URL, but if it's just a filename, construct the URL
+          const supabaseUrl = `https://ssppxsbrphszkvgajcwq.supabase.co/storage/v1/object/public/profile-images/${user.profileImageUrl}`;
+          console.log('[Profile] Using Supabase URL for custom image:', supabaseUrl);
+          return { uri: supabaseUrl };
         }
         
         // Fallback to default if profileImageUrl is invalid
         console.log('[Profile] Invalid profileImageUrl, using default. profileImageUrl was:', user.profileImageUrl);
-        return PROFILE_IMAGE_MAP['1.jpg']; // Return local asset directly
+        return PROFILE_IMAGE_MAP['1.jpg'];
       }
       
       // Fallback to old logic for backward compatibility
       if (!user.profile) {
         console.log('[Profile] No profile data, using default');
-        return PROFILE_IMAGE_MAP['1.jpg']; // Return local asset directly
+        return PROFILE_IMAGE_MAP['1.jpg'];
       }
       
-      console.log('[Profile] Processing legacy profile:', user.profile);
-      
-      // Check if it's a default avatar (1.jpg, 2.jpg, avatar_1.jpg, etc.)
+      // Check if it's a default avatar (avatar_1.jpg to avatar_10.jpg or 1.jpg to 10.jpg)
       if (PROFILE_IMAGE_MAP[user.profile]) {
-        console.log('[Profile] Found in PROFILE_IMAGE_MAP for legacy profile, using local asset:', user.profile);
+        console.log('[Profile] Using legacy default avatar from local assets:', user.profile);
         return PROFILE_IMAGE_MAP[user.profile]; // Return local asset directly
       }
       
       // Check if it's a custom uploaded image (contains underscore pattern for username_email_timestamp)
       if (user.profile.includes('_') && !user.profile.startsWith('avatar_')) {
-        const uploadUrl = `${createApiUrl(API_ENDPOINTS.UPLOADS)}/${user.profile}`;
-        console.log('[Profile] Using legacy upload URL for custom image:', uploadUrl);
-        return { uri: uploadUrl };
+        // This should be a Supabase Storage URL, but if it's just a filename, construct the URL
+        const supabaseUrl = `https://ssppxsbrphszkvgajcwq.supabase.co/storage/v1/object/public/profile-images/${user.profile}`;
+        console.log('[Profile] Using legacy Supabase URL for custom image:', supabaseUrl);
+        return { uri: supabaseUrl };
       }
       
-      // Fallback to default
-      console.log('[Profile] Fallback to default avatar - user.profile was:', user.profile);
-      return PROFILE_IMAGE_MAP['1.jpg']; // Return local asset directly
+      // Final fallback
+      console.log('[Profile] Final fallback to default avatar');
+      return PROFILE_IMAGE_MAP['1.jpg'];
     };
 
     /**
