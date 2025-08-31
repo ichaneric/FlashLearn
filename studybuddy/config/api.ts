@@ -24,9 +24,14 @@ const API_CONFIGS = {
  * @returns {string} The API base URL
  */
 export const getApiBaseUrl = (): string => {
-  // Use local IP address for mobile/Expo development
-  // This ensures the frontend can connect to the backend from mobile devices
-  return API_CONFIGS.network;
+  // Check if we're in production environment
+  if (__DEV__) {
+    // Development mode - use network IP for mobile testing
+    return API_CONFIGS.network;
+  } else {
+    // Production mode - use Vercel URL
+    return API_CONFIGS.production;
+  }
 };
 
 /**

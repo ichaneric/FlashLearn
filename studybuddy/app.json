@@ -16,19 +16,21 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.flashlearn"
+      "bundleIdentifier": "com.flashlearn.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/flashlearnlogo.png",
         "backgroundColor": "#667eea"
       },
-      "package": "com.yourcompany.flashlearn",
+      "package": "com.flashlearn.app",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
-      ]
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.INTERNET"
+      ],
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/images/flashlearnlogo.png",

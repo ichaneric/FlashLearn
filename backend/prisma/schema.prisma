@@ -16,25 +16,8 @@ model User {
   email           String   @unique
   password        String
   profile         String   // e.g., "1.jpg" to "10.jpg"
-  friends         User[]   @relation("Friends")
-  friendOf        User[]   @relation("Friends")
   sets            Set[]
-  sent_inbox      Inbox[]  @relation("Sender")
-  received_inbox  Inbox[]  @relation("Receiver")
-  sentRequests     FriendRequest[] @relation("SentRequests")
-  receivedRequests FriendRequest[] @relation("ReceivedRequests")
   savedSets       SetSave[] @relation("UserSavedSets")
-}
-
-model FriendRequest {
-  id          String   @id @default(uuid())
-  sender_id   String
-  receiver_id String
-  status      String   // 'pending', 'accepted', 'declined'
-  createdAt   DateTime @default(now())
-
-  sender      User     @relation("SentRequests", fields: [sender_id], references: [user_id])
-  receiver    User     @relation("ReceivedRequests", fields: [receiver_id], references: [user_id])
 }
 
 model Set {
@@ -50,7 +33,6 @@ model Set {
   status          String   @default("draft") // enum: "draft", "published"
   user            User     @relation(fields: [user_id], references: [user_id])
   cards           Card[]
-  inbox           Inbox[]
   savedBy         SetSave[] @relation("SetSavedBy")
 }
 
@@ -61,17 +43,6 @@ model Card {
   set_id         String
   color          String // enum: yellow, blue, green, pink, white, lightblue, lightgreen, purple, red, brown
   set            Set    @relation(fields: [set_id], references: [set_id])
-}
-
-model Inbox {
-  inbox_id       String @id @default(uuid())
-  set_id         String
-  sender_id      String
-  receiver_id    String
-  sent_at        DateTime @default(now())
-  set            Set      @relation(fields: [set_id], references: [set_id])
-  sender         User     @relation("Sender", fields: [sender_id], references: [user_id])
-  receiver       User     @relation("Receiver", fields: [receiver_id], references: [user_id])
 }
 
 model SetSave {
