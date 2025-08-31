@@ -118,6 +118,14 @@ const Signup = () => {
     try {
       const apiUrl = createApiUrl(API_ENDPOINTS.SIGNUP);
 
+      // Debug logging
+      console.log('[SIGNUP] API URL:', apiUrl);
+      console.log('[SIGNUP] Using custom image:', !!customImage);
+      console.log('[SIGNUP] Selected avatar:', selectedAvatar);
+      
+      // Temporary debug alert
+      Alert.alert('Debug Info', `API URL: ${apiUrl}\nUsing custom image: ${!!customImage}\nSelected avatar: ${selectedAvatar}`);
+
       let response;
 
       if (customImage) {
