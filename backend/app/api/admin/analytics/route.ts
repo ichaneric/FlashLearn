@@ -37,56 +37,50 @@ export async function GET(req: NextRequest) {
       return addCorsHeaders(response, req.headers.get('origin'));
     }
 
-    // Get all sets grouped by subject
-    const setsBySubject = await prisma.set.groupBy({
-      by: ['set_subject'],
-      where: {
-        posted: true
-      },
-      _count: {
-        set_id: true
-      },
-      _sum: {
-        number_of_cards: true
+    // Get all posted sets
+    const allSets = await prisma.set.findMany({
+      where: { posted: true },
+      include: {
+        savedBy: true,
+        cards: true
       }
     });
 
-    // Get total engagement across all sets
+    // Get total engagement
     const totalEngagement = await prisma.setSave.count();
 
+    // Group sets by subject
+    const subjectGroups: { [key: string]: any[] } = {};
+    allSets.forEach(set => {
+      const subject = set.set_subject || 'General';
+      if (!subjectGroups[subject]) {
+        subjectGroups[subject] = [];
+      }
+      subjectGroups[subject].push(set);
+    });
+
     // Calculate subject analytics
-    const subjectAnalytics = await Promise.all(
-      setsBySubject.map(async (subject) => {
-        const sets = await prisma.set.findMany({
-          where: {
-            set_subject: subject.set_subject,
-            posted: true
-          },
-                      select: {
-              _count: {
-                select: { savedBy: true }
-              }
-            }
-        });
+    const subjectAnalytics = Object.entries(subjectGroups).map(([subject, sets]) => {
+      const setsCount = sets.length;
+      const totalLearners = sets.reduce((sum, set) => sum + set.savedBy.length, 0);
+      const totalCards = sets.reduce((sum, set) => sum + set.cards.length, 0);
+      const engagementRate = totalEngagement > 0 ? (totalLearners / totalEngagement) * 100 : 0;
 
-        const totalLearners = sets.reduce((sum, set) => sum + set._count.savedBy, 0);
-        const engagementRate = totalEngagement > 0 ? (totalLearners / totalEngagement) * 100 : 0;
-
-        return {
-          subject: subject.set_subject || 'General',
-          sets_count: subject._count.set_id,
-          total_learners: totalLearners,
-          engagement_rate: engagementRate
-        };
-      })
-    );
+      return {
+        subject,
+        sets_count: setsCount,
+        total_cards: totalCards,
+        total_learners: totalLearners,
+        engagement_rate: Math.round(engagementRate * 100) / 100
+      };
+    });
 
     // Sort by engagement rate
     subjectAnalytics.sort((a, b) => b.engagement_rate - a.engagement_rate);
 
     // Calculate overall statistics
     const averageEngagement = subjectAnalytics.length > 0 
-      ? subjectAnalytics.reduce((sum, subject) => sum + subject.engagement_rate, 0) / subjectAnalytics.length 
+      ? Math.round((subjectAnalytics.reduce((sum, subject) => sum + subject.engagement_rate, 0) / subjectAnalytics.length) * 100) / 100
       : 0;
 
     const topSubject = subjectAnalytics.length > 0 ? subjectAnalytics[0].subject : 'None';
@@ -99,7 +93,9 @@ export async function GET(req: NextRequest) {
       totalEngagement,
       averageEngagement,
       topSubject,
-      mostEngagedSubject
+      mostEngagedSubject,
+      totalSets: allSets.length,
+      totalCards: allSets.reduce((sum, set) => sum + set.cards.length, 0)
     });
 
     return addCorsHeaders(response, req.headers.get('origin'));
