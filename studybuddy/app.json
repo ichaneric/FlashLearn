@@ -4,10 +4,10 @@
     "slug": "flashlearn",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/flashlearnlogo.png",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/flashlearnlogo.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#667eea"
     },
@@ -20,7 +20,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/flashlearnlogo.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#667eea"
       },
       "package": "com.flashlearn.app",
@@ -33,7 +33,7 @@
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/images/flashlearnlogo.png",
+      "favicon": "./assets/images/icon.png",
       "bundler": "metro"
     },
     "plugins": [
