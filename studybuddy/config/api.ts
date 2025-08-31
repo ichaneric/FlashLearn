@@ -16,7 +16,7 @@ const API_CONFIGS = {
   network: 'http://192.168.254.104:3001',
   
   // Production (when deployed to Vercel)
-  production: 'https://flash-learn-i9al-gqv1khitc-christian-eric-sanchezs-projects.vercel.app',
+  production: 'https://flash-learn-app.vercel.app',
 };
 
 /**
